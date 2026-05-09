@@ -1,17 +1,36 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Layout } from './components/Layout';
-import { Dashboard } from './components/Dashboard';
-import { Maintenance } from './components/Maintenance';
-import { Finance } from './components/Finance';
-import { Properties } from './components/Properties';
-import { Tenants } from './components/Tenants';
-import { Leases } from './components/Leases';
-import { Documents } from './components/Documents';
-import { Messages } from './components/Messages';
-import { Payments } from './components/Payments';
 import { Role } from './enums';
 import type { User, Property, Tenant } from './types';
 import { PROPERTIES as INITIAL_PROPERTIES } from './constants';
+import { LoadingSkeleton } from './shared/components/LoadingSkeleton';
+import { validateEnvironment } from './config/environment';
+
+const Dashboard = lazy(() =>
+  import('./components/Dashboard').then((module) => ({ default: module.Dashboard })),
+);
+const Maintenance = lazy(() =>
+  import('./components/Maintenance').then((module) => ({ default: module.Maintenance })),
+);
+const Finance = lazy(() => import('./components/Finance').then((module) => ({ default: module.Finance })));
+const Properties = lazy(() =>
+  import('./components/Properties').then((module) => ({ default: module.Properties })),
+);
+const Tenants = lazy(() => import('./components/Tenants').then((module) => ({ default: module.Tenants })));
+const Leases = lazy(() => import('./components/Leases').then((module) => ({ default: module.Leases })));
+const Documents = lazy(() =>
+  import('./components/Documents').then((module) => ({ default: module.Documents })),
+);
+const Messages = lazy(() => import('./components/Messages').then((module) => ({ default: module.Messages })));
+const Payments = lazy(() => import('./components/Payments').then((module) => ({ default: module.Payments })));
+const Marketplace = lazy(() =>
+  import('./components/Marketplace').then((module) => ({ default: module.Marketplace })),
+);
+const Intelligence = lazy(() =>
+  import('./components/Intelligence').then((module) => ({ default: module.Intelligence })),
+);
+
+validateEnvironment().forEach((warning) => console.warn(`[PropFlow config] ${warning}`));
 
 const MOCK_TENANTS: Tenant[] = [
   {
@@ -25,7 +44,7 @@ const MOCK_TENANTS: Tenant[] = [
     leaseEnd: '2024-12-31',
     rentAmount: 120000,
     balance: 120000,
-    status: 'Active'
+    status: 'Active',
   },
 ];
 
@@ -35,7 +54,7 @@ const App: React.FC = () => {
     id: 'u1',
     name: 'Musa Omari',
     email: 'musa@amanheights.com',
-    role: Role.LANDLORD
+    role: Role.LANDLORD,
   });
 
   const [properties, setProperties] = useState<Property[]>(INITIAL_PROPERTIES);
@@ -49,7 +68,7 @@ const App: React.FC = () => {
         name: 'Alice Johnson',
         email: 'alice.j@example.com',
         role: Role.TENANT,
-        tenantId: 't1'
+        tenantId: 't1',
       });
       setActiveTab('dashboard'); // Reset tab when switching
     } else {
@@ -57,7 +76,7 @@ const App: React.FC = () => {
         id: 'u1',
         name: 'Musa Omari',
         email: 'musa@amanheights.com',
-        role: Role.LANDLORD
+        role: Role.LANDLORD,
       });
       setActiveTab('dashboard');
     }
@@ -73,7 +92,7 @@ const App: React.FC = () => {
       tenants,
       addProperty,
       addTenant,
-      setActiveTab
+      setActiveTab,
     };
 
     switch (activeTab) {
@@ -81,6 +100,11 @@ const App: React.FC = () => {
         return <Dashboard {...props} />;
       case 'properties':
         return <Properties {...props} />;
+      case 'marketplace':
+        return <Marketplace />;
+      case 'intelligence':
+      case 'admin':
+        return <Intelligence />;
       case 'tenants':
         return <Tenants {...props} />;
       case 'leases':
@@ -101,13 +125,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      user={user}
-      onToggleRole={toggleRole}
-    >
-      {renderContent()}
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab} user={user} onToggleRole={toggleRole}>
+      <Suspense fallback={<LoadingSkeleton />}>{renderContent()}</Suspense>
     </Layout>
   );
 };
