@@ -119,3 +119,20 @@ export interface Payment {
   unit_label: string;
   tenant_name: string;
 }
+
+export interface MaintenanceRequest {
+  id: string;
+  tenancy_id: string;
+  property_id: string;
+  unit_id: string;
+  created_by: string;
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'emergency';
+  status: 'open' | 'acknowledged' | 'in_progress' | 'resolved' | 'cancelled';
+  property_name: string;
+  unit_label: string;
+  renter_name: string;
+  created_at: string;
+  updated_at: string;
+}
