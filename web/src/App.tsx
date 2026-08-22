@@ -5,19 +5,18 @@ import { ProtectedRoute } from './auth/RouteGuards';
 import { PortalLayout } from './layouts/PortalLayout';
 import { PublicLayout } from './layouts/PublicLayout';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
-import { HomePage, NotFoundPage, PermissionDeniedPage, SectionPage } from './pages/FoundationPages';
+import { HomePage, NotFoundPage, PermissionDeniedPage } from './pages/FoundationPages';
 import { NewPropertyPage, PropertiesPage, PropertyDetailPage } from './pages/InventoryPages';
 import { ListingDetailPage, MarketplacePage } from './pages/MarketplacePages';
 import { LandlordInquiriesPage, RenterInquiriesPage } from './pages/InquiryPages';
 import { TenanciesPage } from './pages/TenancyPages';
 import { PaymentsPage } from './pages/PaymentPages';
 import { MaintenancePage } from './pages/MaintenancePages';
+import { LandlordDashboardPage, ProfilePage, RenterDashboardPage } from './pages/DashboardPages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
 });
-
-const portal = (title: string, description: string) => <SectionPage title={title} description={description} />;
 
 // Exported for route-level tests.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -35,7 +34,7 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedRoute roles={['landlord']} />,
     children: [{ element: <PortalLayout />, children: [
-      { path: '/landlord/dashboard', element: portal('Dashboard', 'Your live portfolio overview.') },
+      { path: '/landlord/dashboard', element: <LandlordDashboardPage /> },
       { path: '/landlord/properties', element: <PropertiesPage /> },
       { path: '/landlord/properties/new', element: <NewPropertyPage /> },
       { path: '/landlord/properties/:propertyId', element: <PropertyDetailPage /> },
@@ -43,16 +42,16 @@ export const router = createBrowserRouter([
       { path: '/landlord/tenancies', element: <TenanciesPage /> },
       { path: '/landlord/payments', element: <PaymentsPage /> },
       { path: '/landlord/maintenance', element: <MaintenancePage /> },
-      { path: '/landlord/profile', element: portal('Profile', 'Review your account details.') },
+      { path: '/landlord/profile', element: <ProfilePage /> },
     ] }],
   },
   {
     element: <ProtectedRoute roles={['renter']} />,
     children: [{ element: <PortalLayout />, children: [
-      { path: '/renter/dashboard', element: portal('Dashboard', 'Your rental activity at a glance.') },
+      { path: '/renter/dashboard', element: <RenterDashboardPage /> },
       { path: '/renter/inquiries', element: <RenterInquiriesPage /> },
       { path: '/renter/maintenance', element: <MaintenancePage /> },
-      { path: '/renter/profile', element: portal('Profile', 'Review your account details.') },
+      { path: '/renter/profile', element: <ProfilePage /> },
     ] }],
   },
   { path: '/permission-denied', element: <PermissionDeniedPage /> },
