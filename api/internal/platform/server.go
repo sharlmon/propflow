@@ -79,6 +79,8 @@ func (s *Server) Routes() http.Handler {
 			protected.Get("/me", s.me)
 			protected.With(requireRole("renter"), s.rateLimit("inquiry", 20, time.Hour)).Post("/listings/{listingId}/inquiries", s.createInquiry)
 			protected.With(requireRole("renter")).Get("/renter/inquiries", s.renterInquiries)
+			protected.Get("/tenancies", s.listTenancies)
+			protected.Get("/tenancies/{tenancyId}", s.getTenancy)
 			protected.Group(func(landlord chi.Router) {
 				landlord.Use(requireRole("landlord"))
 				landlord.Get("/properties", s.listProperties)
@@ -96,6 +98,8 @@ func (s *Server) Routes() http.Handler {
 				landlord.Post("/listings/{listingId}/unpublish", s.unpublishListing)
 				landlord.Get("/landlord/inquiries", s.landlordInquiries)
 				landlord.Patch("/inquiries/{inquiryId}/status", s.updateInquiryStatus)
+				landlord.Get("/tenancy-options", s.tenancyOptions)
+				landlord.Post("/tenancies", s.createTenancy)
 			})
 		})
 	})
