@@ -8,6 +8,7 @@ import { LoginPage, RegisterPage } from './pages/AuthPages';
 import { HomePage, NotFoundPage, PermissionDeniedPage, SectionPage } from './pages/FoundationPages';
 import { NewPropertyPage, PropertiesPage, PropertyDetailPage } from './pages/InventoryPages';
 import { ListingDetailPage, MarketplacePage } from './pages/MarketplacePages';
+import { LandlordInquiriesPage, RenterInquiriesPage } from './pages/InquiryPages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
@@ -35,7 +36,7 @@ export const router = createBrowserRouter([
       { path: '/landlord/properties', element: <PropertiesPage /> },
       { path: '/landlord/properties/new', element: <NewPropertyPage /> },
       { path: '/landlord/properties/:propertyId', element: <PropertyDetailPage /> },
-      { path: '/landlord/inquiries', element: portal('Inquiries', 'Review renter interest and update progress.') },
+      { path: '/landlord/inquiries', element: <LandlordInquiriesPage /> },
       { path: '/landlord/tenancies', element: portal('Tenancies', 'Record and review active rental agreements.') },
       { path: '/landlord/payments', element: portal('Payments', 'Maintain the demo rent ledger.') },
       { path: '/landlord/maintenance', element: portal('Maintenance', 'Track requests through resolution.') },
@@ -46,7 +47,7 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute roles={['renter']} />,
     children: [{ element: <PortalLayout />, children: [
       { path: '/renter/dashboard', element: portal('Dashboard', 'Your rental activity at a glance.') },
-      { path: '/renter/inquiries', element: portal('Inquiries', 'Review your listing inquiries.') },
+      { path: '/renter/inquiries', element: <RenterInquiriesPage /> },
       { path: '/renter/maintenance', element: portal('Maintenance', 'Submit and follow maintenance requests.') },
       { path: '/renter/profile', element: portal('Profile', 'Review your account details.') },
     ] }],
