@@ -22,9 +22,10 @@ Recorded on 23 August 2026 in the implementation workspace. A command is marked 
 | Golden path | `npm run test:e2e` against isolated PostgreSQL | Passed in desktop Chromium (4.1s) |
 | Mobile navigation | 360px Playwright route/navigation/overflow smoke | Passed in mobile Chromium (943ms) |
 | Docker images | GitHub CI API and web image builds | Passed |
-| Complete Compose topology | `docker compose up -d --build --wait`, API readiness and web probes | Pending final CI run |
+| Complete Compose topology | `docker compose up -d --build --wait`, API readiness and web probes | Passed on GitHub run `32603088075` |
 
 ## Explicitly unverified or external
 
 - Docker commands were not executed locally because the Docker CLI was not installed (`docker: command not found`); the equivalent image and topology gates run on GitHub-hosted Docker.
+- GitHub workflow `MVP quality gates` run `32603088075` passed all five jobs on commit `bd27be6`.
 - No live deployment ran because no provider, production database, or environment secrets were supplied. The build-only deployment workflow states this boundary.
