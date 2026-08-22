@@ -1,4 +1,4 @@
-.PHONY: dev api web test test-web test-api test-e2e migrate-up migrate-down seed db-reset demo sqlc
+.PHONY: dev api web test test-web test-api test-e2e migrate-up migrate-down seed db-reset demo demo-reset sqlc check-dev-db
 
 DATABASE_URL ?= postgres://propflow:propflow_dev_only@localhost:5432/propflow?sslmode=disable
 
@@ -27,17 +27,24 @@ test-e2e:
 migrate-up:
 	migrate -path api/migrations -database '$(DATABASE_URL)' up
 
-migrate-down:
+migrate-down: check-dev-db
 	migrate -path api/migrations -database '$(DATABASE_URL)' down 1
 
-seed:
+seed: check-dev-db
 	psql '$(DATABASE_URL)' -v ON_ERROR_STOP=1 -f api/migrations/000002_seed.up.sql
 
-db-reset:
+db-reset: check-dev-db
 	migrate -path api/migrations -database '$(DATABASE_URL)' drop -f
 	migrate -path api/migrations -database '$(DATABASE_URL)' up
 
+check-dev-db:
+	@echo '$(DATABASE_URL)' | grep -Eq '@(localhost|127\.0\.0\.1|db):[0-9]+/propflow([?]|$$)' || (echo "Refusing non-local or non-propflow database URL" && exit 1)
+
 demo:
+	docker compose up --build
+
+demo-reset:
+	docker compose down -v
 	docker compose up --build
 
 sqlc:

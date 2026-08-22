@@ -13,4 +13,4 @@
 | `feat/dashboard-analytics` | Real operating metrics | Metric/recent cards | Scoped aggregation | Dashboard queries/index review | Empty/error/aggregate tests | All domains | Complete |
 | `test/golden-path-e2e` | Reproducible journey | Stable semantic selectors | Test reset support | Isolated test DB | Playwright | All features | Complete |
 | `ci/mvp-quality-gates` | Merge protection | npm quality job | Go quality job | Migration/integration job | Contract/security jobs | Tests | Complete |
-| `chore/demo-deployment` | Wednesday demo | Production build | Image/health config | Deterministic seed | Regression/demo script | CI | Pending |
+| `chore/demo-deployment` | Wednesday demo | Production build | Image/health config | Deterministic seed | Regression/demo script | CI | Complete locally; external hosting unconfigured |

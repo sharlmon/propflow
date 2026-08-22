@@ -1,29 +1,43 @@
-# Deployment Guide
+# Demo deployment guide
 
-## Current App
+## Current status
 
-The current app is a Vite React frontend.
+The repository contains production-style API and web images plus a same-origin Nginx reverse proxy. No external hosting provider, production PostgreSQL instance, DNS name, TLS certificate, or GitHub environment secrets are configured, so there is no live deployment to claim.
+
+## Local demo artifact
 
 ```bash
-npm install
-npm run lint
-npm run test
-npm run build
-npm run preview
+cp .env.example .env
+docker compose up --build
+curl --fail http://localhost:8080/healthz
+curl --fail http://localhost:8080/readyz
 ```
 
-## Required Environment
+Open <http://localhost:5173>. `docker compose down` preserves data; `make demo-reset` intentionally deletes the local named volume and recreates deterministic seed data.
 
-Copy `.env.example` to `.env.local` and fill provider keys as features are enabled.
+## Hosting topology
 
-## Recommended Production Path
+Deploy the web and API containers on one public HTTPS origin. Route `/api/` to the API and all other paths to Nginx with SPA fallback. PostgreSQL must be private and reachable only by the API.
 
-1. Deploy frontend to Vercel, Netlify, Cloudflare Pages, or an S3/CDN setup.
-2. Add a backend API on Render, Fly.io, Railway, AWS ECS, or Kubernetes when persistence lands.
-3. Use Postgres with PostGIS, Redis, object storage, and a CDN.
-4. Run migrations in CI/CD before promoting releases.
-5. Add separate staging and production environments with different payment, maps, AI, and messaging credentials.
+Required runtime configuration:
 
-## CI/CD Gates
+- `DATABASE_URL` from a GitHub environment secret
+- `APP_ORIGIN=https://your-demo-host.example` (exact, no wildcard)
+- `COOKIE_SECURE=true`
+- `APP_ENV=production`
+- `HTTP_ADDR=:8080`
 
-Every pull request should run install, lint, tests, build, dependency audit, and Lighthouse checks for marketplace and dashboard paths.
+Do not put database, payment, session, or AI secrets in frontend build arguments.
+
+## Safe release sequence
+
+1. Run `.github/workflows/ci.yml` successfully.
+2. Back up the target database and verify migration compatibility.
+3. Apply the same files in `api/migrations` with `golang-migrate` from a one-off migration job.
+4. Stop if migration fails; do not replace healthy application instances.
+5. Deploy immutable API and web images using the same commit SHA tag.
+6. Require successful `/healthz` and `/readyz` checks before shifting traffic.
+7. If readiness fails, restore the prior image. Roll back schema only when the migration's down path has been rehearsed and data loss has been ruled out.
+8. Run the demo smoke journey and inspect structured request logs without exposing cookies or passwords.
+
+The current `deploy-demo.yml` ends after image builds. Add provider-specific migration, deployment, health, and rollback steps only when the target and secrets exist.

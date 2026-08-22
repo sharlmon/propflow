@@ -8,9 +8,15 @@ async function signIn(page: import('@playwright/test').Page, account: typeof lan
   await page.getByLabel('Email').fill(account.email);
   await page.getByLabel('Password').fill(account.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page).toHaveURL(
+    account.email === landlord.email ? '/landlord/dashboard' : '/renter/dashboard',
+  );
 }
 
 async function signOut(page: import('@playwright/test').Page) {
+  if ((await page.getByRole('button', { name: 'Sign out' }).count()) === 0) {
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+  }
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page).toHaveURL('/');
 }
