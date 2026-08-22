@@ -1,7 +1,12 @@
 node_modules
 dist
+.env.*
+!.env.example
 .env
 .env.local
 coverage
 *.tsbuildinfo
 *.log
+api/bin
+playwright-report
+test-results

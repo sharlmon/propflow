@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color: #334155;
+    background: #f6f9ff;
+    font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+
+  body {
+    @apply m-0 min-w-[320px] bg-[#F6F9FF] text-slate-700 antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-blue-600 ring-offset-2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}
