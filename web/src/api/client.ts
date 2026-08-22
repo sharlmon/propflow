@@ -50,18 +50,29 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   return payload.data;
 }
 
-export async function apiRequestWithMeta<T>(path: string, options: ApiRequestOptions = {}): Promise<ApiEnvelope<T>> {
+export async function apiRequestWithMeta<T>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<ApiEnvelope<T>> {
   const { body, ...requestOptions } = options;
   const request: RequestInit = {
     ...requestOptions,
     credentials: 'include',
-    headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }), ...options.headers },
+    headers: {
+      Accept: 'application/json',
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...options.headers,
+    },
   };
   if (body !== undefined) request.body = JSON.stringify(body);
   const response = await fetch(`${API_BASE}${path}`, request);
   if (!response.ok) {
     let payload: ApiErrorShape | undefined;
-    try { payload = (await response.json()) as ApiErrorShape; } catch { payload = undefined; }
+    try {
+      payload = (await response.json()) as ApiErrorShape;
+    } catch {
+      payload = undefined;
+    }
     throw new ApiError(response.status, payload);
   }
   return (await response.json()) as ApiEnvelope<T>;

@@ -5,5 +5,187 @@ import type { MaintenanceRequest, Tenancy } from '../api/types';
 import { useAuth } from '../auth/AuthProvider';
 import { Button } from '../components/ui/Button';
 
-const nextStatuses:Record<MaintenanceRequest['status'],MaintenanceRequest['status'][]>= {open:['open','acknowledged','cancelled'],acknowledged:['acknowledged','in_progress','cancelled'],in_progress:['in_progress','resolved','cancelled'],resolved:['resolved'],cancelled:['cancelled']};
-export function MaintenancePage(){const{user}=useAuth();const client=useQueryClient();const[show,setShow]=useState(false);const requests=useQuery({queryKey:['maintenance'],queryFn:({signal})=>apiRequest<MaintenanceRequest[]>('/maintenance-requests',{signal})});const tenancies=useQuery({queryKey:['tenancies'],queryFn:({signal})=>apiRequest<Tenancy[]>('/tenancies',{signal}),enabled:user?.role==='renter'&&show});const create=useMutation({mutationFn:(body:Record<string,unknown>)=>apiRequest('/maintenance-requests',{method:'POST',body}),onSuccess:async()=>{setShow(false);await client.invalidateQueries({queryKey:['maintenance']})}});const update=useMutation({mutationFn:({id,status,priority}:{id:string;status:string;priority:string})=>apiRequest(`/maintenance-requests/${id}/status`,{method:'PATCH',body:{status,priority}}),onSuccess:()=>client.invalidateQueries({queryKey:['maintenance']})});function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();create.mutate(Object.fromEntries(new FormData(event.currentTarget)))}const renter=user?.role==='renter';return <section><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-wider text-blue-700">Repair workflow</p><h1 className="mt-2 text-3xl font-bold text-slate-950">Maintenance</h1><p className="mt-2 text-slate-600">{renter?'Report a problem for your active tenancy and track its progress.':'Acknowledge, work, and resolve renter requests in a clear order.'}</p></div>{renter?<Button onClick={()=>setShow((value)=>!value)}>{show?'Cancel':'New request'}</Button>:null}</div>{show?<form onSubmit={submit} className="mt-7 grid gap-4 rounded-2xl border bg-white p-6 sm:grid-cols-2"><label className="sm:col-span-2"><span className="mb-2 block text-sm font-semibold">Tenancy</span><select name="tenancy_id" required className="min-h-11 w-full rounded-xl border bg-white px-3"><option value="">Choose your home</option>{tenancies.data?.filter((item)=>item.status==='active').map((item)=><option key={item.id} value={item.id}>{item.property_name} · {item.unit_label}</option>)}</select></label><label><span className="mb-2 block text-sm font-semibold">Title</span><input name="title" minLength={3} required className="min-h-11 w-full rounded-xl border px-3" /></label><label><span className="mb-2 block text-sm font-semibold">Priority</span><select name="priority" className="min-h-11 w-full rounded-xl border bg-white px-3"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="emergency">Emergency</option></select></label><label className="sm:col-span-2"><span className="mb-2 block text-sm font-semibold">Description</span><textarea name="description" minLength={10} required className="min-h-28 w-full rounded-xl border p-3" /></label>{create.isError?<p role="alert" className="sm:col-span-2 text-red-700">{create.error.message}</p>:null}<div className="sm:col-span-2"><Button type="submit" disabled={create.isPending}>{create.isPending?'Submitting…':'Submit request'}</Button></div></form>:null}{update.isError?<p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-red-800">{update.error.message}</p>:null}<div className="mt-7">{requests.isLoading?<div className="h-48 animate-pulse rounded-2xl bg-white"/>:requests.isError?<div role="alert" className="rounded-xl bg-red-50 p-4">{requests.error.message}</div>:requests.data?.length===0?<div className="rounded-2xl border border-dashed bg-white p-10 text-center">No maintenance requests.</div>:<div className="grid gap-4 lg:grid-cols-2">{requests.data?.map((item)=><article key={item.id} className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-sm text-slate-500">{item.property_name} · {item.unit_label}</p><h2 className="mt-1 text-lg font-bold text-slate-950">{item.title}</h2></div><span className={`rounded-full px-3 py-1 text-xs font-semibold ${item.priority==='emergency'||item.priority==='high'?'bg-red-50 text-red-800':'bg-amber-50 text-amber-800'}`}>{item.priority}</span></div><p className="mt-4 text-sm leading-6 text-slate-700">{item.description}</p><p className="mt-4 text-xs text-slate-500">Submitted by {item.renter_name} · {new Date(item.created_at).toLocaleDateString('en-KE')}</p>{renter?<span className="mt-4 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">{item.status.replace('_',' ')}</span>:<div className="mt-4 flex gap-3"><select aria-label={`Status for ${item.title}`} value={item.status} className="min-h-11 rounded-xl border bg-white px-3" onChange={(event)=>update.mutate({id:item.id,status:event.target.value,priority:item.priority})}>{nextStatuses[item.status].map((status)=><option key={status} value={status}>{status.replace('_',' ')}</option>)}</select><select aria-label={`Priority for ${item.title}`} value={item.priority} className="min-h-11 rounded-xl border bg-white px-3" onChange={(event)=>update.mutate({id:item.id,status:item.status,priority:event.target.value})}>{['low','medium','high','emergency'].map((priority)=><option key={priority} value={priority}>{priority}</option>)}</select></div>}</article>)}</div>}</div></section>}
+const nextStatuses: Record<MaintenanceRequest['status'], MaintenanceRequest['status'][]> = {
+  open: ['open', 'acknowledged', 'cancelled'],
+  acknowledged: ['acknowledged', 'in_progress', 'cancelled'],
+  in_progress: ['in_progress', 'resolved', 'cancelled'],
+  resolved: ['resolved'],
+  cancelled: ['cancelled'],
+};
+export function MaintenancePage() {
+  const { user } = useAuth();
+  const client = useQueryClient();
+  const [show, setShow] = useState(false);
+  const requests = useQuery({
+    queryKey: ['maintenance'],
+    queryFn: ({ signal }) => apiRequest<MaintenanceRequest[]>('/maintenance-requests', { signal }),
+  });
+  const tenancies = useQuery({
+    queryKey: ['tenancies'],
+    queryFn: ({ signal }) => apiRequest<Tenancy[]>('/tenancies', { signal }),
+    enabled: user?.role === 'renter' && show,
+  });
+  const create = useMutation({
+    mutationFn: (body: Record<string, unknown>) =>
+      apiRequest('/maintenance-requests', { method: 'POST', body }),
+    onSuccess: async () => {
+      setShow(false);
+      await client.invalidateQueries({ queryKey: ['maintenance'] });
+    },
+  });
+  const update = useMutation({
+    mutationFn: ({ id, status, priority }: { id: string; status: string; priority: string }) =>
+      apiRequest(`/maintenance-requests/${id}/status`, { method: 'PATCH', body: { status, priority } }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['maintenance'] }),
+  });
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    create.mutate(Object.fromEntries(new FormData(event.currentTarget)));
+  }
+  const renter = user?.role === 'renter';
+  return (
+    <section>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">Repair workflow</p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-950">Maintenance</h1>
+          <p className="mt-2 text-slate-600">
+            {renter
+              ? 'Report a problem for your active tenancy and track its progress.'
+              : 'Acknowledge, work, and resolve renter requests in a clear order.'}
+          </p>
+        </div>
+        {renter ? (
+          <Button onClick={() => setShow((value) => !value)}>{show ? 'Cancel' : 'New request'}</Button>
+        ) : null}
+      </div>
+      {show ? (
+        <form onSubmit={submit} className="mt-7 grid gap-4 rounded-2xl border bg-white p-6 sm:grid-cols-2">
+          <label className="sm:col-span-2">
+            <span className="mb-2 block text-sm font-semibold">Tenancy</span>
+            <select name="tenancy_id" required className="min-h-11 w-full rounded-xl border bg-white px-3">
+              <option value="">Choose your home</option>
+              {tenancies.data
+                ?.filter((item) => item.status === 'active')
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.property_name} · {item.unit_label}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Title</span>
+            <input name="title" minLength={3} required className="min-h-11 w-full rounded-xl border px-3" />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Priority</span>
+            <select name="priority" className="min-h-11 w-full rounded-xl border bg-white px-3">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="emergency">Emergency</option>
+            </select>
+          </label>
+          <label className="sm:col-span-2">
+            <span className="mb-2 block text-sm font-semibold">Description</span>
+            <textarea
+              name="description"
+              minLength={10}
+              required
+              className="min-h-28 w-full rounded-xl border p-3"
+            />
+          </label>
+          {create.isError ? (
+            <p role="alert" className="sm:col-span-2 text-red-700">
+              {create.error.message}
+            </p>
+          ) : null}
+          <div className="sm:col-span-2">
+            <Button type="submit" disabled={create.isPending}>
+              {create.isPending ? 'Submitting…' : 'Submit request'}
+            </Button>
+          </div>
+        </form>
+      ) : null}
+      {update.isError ? (
+        <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-red-800">
+          {update.error.message}
+        </p>
+      ) : null}
+      <div className="mt-7">
+        {requests.isLoading ? (
+          <div className="h-48 animate-pulse rounded-2xl bg-white" />
+        ) : requests.isError ? (
+          <div role="alert" className="rounded-xl bg-red-50 p-4">
+            {requests.error.message}
+          </div>
+        ) : requests.data?.length === 0 ? (
+          <div className="rounded-2xl border border-dashed bg-white p-10 text-center">
+            No maintenance requests.
+          </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {requests.data?.map((item) => (
+              <article key={item.id} className="rounded-2xl border bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-slate-500">
+                      {item.property_name} · {item.unit_label}
+                    </p>
+                    <h2 className="mt-1 text-lg font-bold text-slate-950">{item.title}</h2>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${item.priority === 'emergency' || item.priority === 'high' ? 'bg-red-50 text-red-800' : 'bg-amber-50 text-amber-800'}`}
+                  >
+                    {item.priority}
+                  </span>
+                </div>
+                <p className="mt-4 text-sm leading-6 text-slate-700">{item.description}</p>
+                <p className="mt-4 text-xs text-slate-500">
+                  Submitted by {item.renter_name} · {new Date(item.created_at).toLocaleDateString('en-KE')}
+                </p>
+                {renter ? (
+                  <span className="mt-4 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                    {item.status.replace('_', ' ')}
+                  </span>
+                ) : (
+                  <div className="mt-4 flex gap-3">
+                    <select
+                      aria-label={`Status for ${item.title}`}
+                      value={item.status}
+                      className="min-h-11 rounded-xl border bg-white px-3"
+                      onChange={(event) =>
+                        update.mutate({ id: item.id, status: event.target.value, priority: item.priority })
+                      }
+                    >
+                      {nextStatuses[item.status].map((status) => (
+                        <option key={status} value={status}>
+                          {status.replace('_', ' ')}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      aria-label={`Priority for ${item.title}`}
+                      value={item.priority}
+                      className="min-h-11 rounded-xl border bg-white px-3"
+                      onChange={(event) =>
+                        update.mutate({ id: item.id, status: item.status, priority: event.target.value })
+                      }
+                    >
+                      {['low', 'medium', 'high', 'emergency'].map((priority) => (
+                        <option key={priority} value={priority}>
+                          {priority}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

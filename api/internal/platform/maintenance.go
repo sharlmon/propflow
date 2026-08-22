@@ -123,8 +123,14 @@ func (s *Server) updateMaintenance(w http.ResponseWriter, r *http.Request) {
 		writeError(w, r, http.StatusUnprocessableEntity, "validation_error", "Choose a valid priority.", nil)
 		return
 	}
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
+		writeError(w, r, http.StatusInternalServerError, "internal_error", "Unable to update maintenance request.", nil)
+		return
+	}
+	defer tx.Rollback(r.Context())
 	var current string
-	err := s.db.QueryRow(r.Context(), `SELECT m.status FROM maintenance_requests m WHERE m.id=$1 AND m.organization_id=$2 FOR UPDATE`, id, actor.OrganizationID).Scan(&current)
+	err = tx.QueryRow(r.Context(), `SELECT m.status FROM maintenance_requests m WHERE m.id=$1 AND m.organization_id=$2 FOR UPDATE`, id, actor.OrganizationID).Scan(&current)
 	if isNotFound(err) {
 		writeError(w, r, http.StatusNotFound, "not_found", "Maintenance request not found.", nil)
 		return
@@ -137,8 +143,12 @@ func (s *Server) updateMaintenance(w http.ResponseWriter, r *http.Request) {
 		writeError(w, r, http.StatusConflict, "invalid_transition", "That maintenance status transition is not allowed.", nil)
 		return
 	}
-	_, err = s.db.Exec(r.Context(), `UPDATE maintenance_requests SET status=$1,priority=$2,updated_at=now() WHERE id=$3`, input.Status, input.Priority, id)
+	_, err = tx.Exec(r.Context(), `UPDATE maintenance_requests SET status=$1,priority=$2,updated_at=now() WHERE id=$3`, input.Status, input.Priority, id)
 	if err != nil {
+		writeError(w, r, http.StatusInternalServerError, "internal_error", "Unable to update maintenance request.", nil)
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, r, http.StatusInternalServerError, "internal_error", "Unable to update maintenance request.", nil)
 		return
 	}

@@ -1,0 +1,22 @@
+name: Build demo release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-artifacts:
+    runs-on: ubuntu-latest
+    environment: demo
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f api/Dockerfile -t propflow-api:${{ github.sha }} .
+      - run: docker build -f web/Dockerfile -t propflow-web:${{ github.sha }} web
+      - name: Deployment boundary
+        run: |
+          echo "Images passed their production builds."
+          echo "Attach a hosting provider only after DEMO_DATABASE_URL and health-check rollback are configured."

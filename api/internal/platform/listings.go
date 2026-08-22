@@ -95,7 +95,7 @@ func (s *Server) listListings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getListingBySlug(w http.ResponseWriter, r *http.Request) {
-	slug := strings.TrimSpace(chi.URLParam(r, "slug"))
+	slug := strings.TrimSpace(chi.URLParam(r, "listingRef"))
 	var listing Listing
 	err := s.db.QueryRow(r.Context(), `
 		SELECT l.id,l.property_id,l.unit_id,l.slug,l.title,l.description,l.rent_amount::float8,l.deposit_amount::float8,l.amenities,l.status,l.published_at,
@@ -140,7 +140,7 @@ func (s *Server) createListing(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) updateListing(w http.ResponseWriter, r *http.Request) {
-	id, ok := parseUUIDParam(w, r, "listingId")
+	id, ok := parseUUIDParam(w, r, "listingRef")
 	if !ok {
 		return
 	}

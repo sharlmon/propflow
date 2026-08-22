@@ -53,7 +53,9 @@ test('landlord-to-renter golden path', async ({ page }) => {
   await signIn(page, renter);
   await page.goto(`/listings?query=${encodeURIComponent(property)}`);
   await page.getByRole('link', { name: 'View home' }).click();
-  await page.getByLabel('Message to the landlord').fill('I would like to view this demo home tomorrow afternoon.');
+  await page
+    .getByLabel('Message to the landlord')
+    .fill('I would like to view this demo home tomorrow afternoon.');
   await page.getByRole('button', { name: 'Send inquiry' }).click();
   await expect(page.getByRole('status')).toContainText('Inquiry sent');
   await signOut(page);
@@ -91,5 +93,7 @@ test('landlord-to-renter golden path', async ({ page }) => {
   const request = page.locator('article').filter({ hasText: maintenance });
   await expect(request).toBeVisible();
   await request.getByRole('combobox', { name: `Status for ${maintenance}` }).selectOption('acknowledged');
-  await expect(request.getByRole('combobox', { name: `Status for ${maintenance}` })).toHaveValue('acknowledged');
+  await expect(request.getByRole('combobox', { name: `Status for ${maintenance}` })).toHaveValue(
+    'acknowledged',
+  );
 });

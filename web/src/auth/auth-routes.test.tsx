@@ -4,10 +4,13 @@ import App, { router } from '../App';
 
 const unauthorized = () =>
   Promise.resolve(
-    new Response(JSON.stringify({ error: { code: 'authentication_required', message: 'Sign in', request_id: 'test' } }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    }),
+    new Response(
+      JSON.stringify({ error: { code: 'authentication_required', message: 'Sign in', request_id: 'test' } }),
+      {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    ),
   );
 
 describe('authentication routes', () => {
