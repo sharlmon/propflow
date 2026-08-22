@@ -18,7 +18,7 @@ async function signOut(page: import('@playwright/test').Page) {
     await page.getByRole('link', { name: 'Dashboard' }).click();
   }
   await page.getByRole('button', { name: 'Sign out' }).click();
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/login');
 }
 
 test('landlord-to-renter golden path', async ({ page }) => {
