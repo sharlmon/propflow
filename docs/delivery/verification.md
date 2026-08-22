@@ -21,9 +21,10 @@ Recorded on 23 August 2026 in the implementation workspace. A command is marked 
 | Authentication smoke | health, login, current-user, logout against isolated PostgreSQL | Passed |
 | Golden path | `npm run test:e2e` against isolated PostgreSQL | Passed in desktop Chromium (4.1s) |
 | Mobile navigation | 360px Playwright route/navigation/overflow smoke | Passed in mobile Chromium (943ms) |
+| Docker images | GitHub CI API and web image builds | Passed |
+| Complete Compose topology | `docker compose up -d --build --wait`, API readiness and web probes | Pending final CI run |
 
 ## Explicitly unverified or external
 
-- `docker compose up --build` and both image builds were not executed locally because the Docker CLI was not installed (`docker: command not found`). GitHub Actions contains the image-build gate.
-- The GitHub Actions workflows have been syntax-checked locally but have not run on GitHub in this workspace.
+- Docker commands were not executed locally because the Docker CLI was not installed (`docker: command not found`); the equivalent image and topology gates run on GitHub-hosted Docker.
 - No live deployment ran because no provider, production database, or environment secrets were supplied. The build-only deployment workflow states this boundary.

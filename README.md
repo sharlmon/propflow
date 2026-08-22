@@ -150,7 +150,7 @@ Follow the repeatable [5–7 minute demo script](docs/demo/demo-script.md). The 
 ## Known limitations
 
 - The payment feature is a ledger only; `mpesa_demo` is simulated.
-- No hosting target is configured, and Docker image/Compose execution could not be locally verified in the authoring environment because the Docker CLI was unavailable.
+- No hosting target is configured. Docker image and Compose startup are verified by GitHub CI, though they could not be rerun on the authoring machine because its Docker CLI was unavailable.
 - SQLC query files and generated code are checked for drift, while current domain handlers still use centralized parameterized pgx statements; moving handler persistence behind domain repositories is the next backend refactor.
 - The retained legacy prototype components remain as visual reference but are not routed or imported into the production application.
 - Frontend unit coverage is deliberately narrow; the real PostgreSQL golden-path Playwright test carries the principal integration confidence.
