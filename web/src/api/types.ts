@@ -90,3 +90,19 @@ export interface Inquiry {
   renter_name?: string;
   renter_email?: string;
 }
+
+export interface Tenancy {
+  id: string;
+  property_id: string;
+  unit_id: string;
+  tenant_id: string;
+  property_name: string;
+  unit_label: string;
+  tenant_name: string;
+  tenant_email: string;
+  start_date: string;
+  end_date?: string;
+  monthly_rent: number;
+  deposit_amount: number;
+  status: 'pending' | 'active' | 'ended' | 'cancelled';
+}

@@ -9,6 +9,7 @@ import { HomePage, NotFoundPage, PermissionDeniedPage, SectionPage } from './pag
 import { NewPropertyPage, PropertiesPage, PropertyDetailPage } from './pages/InventoryPages';
 import { ListingDetailPage, MarketplacePage } from './pages/MarketplacePages';
 import { LandlordInquiriesPage, RenterInquiriesPage } from './pages/InquiryPages';
+import { TenanciesPage } from './pages/TenancyPages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
@@ -37,7 +38,7 @@ export const router = createBrowserRouter([
       { path: '/landlord/properties/new', element: <NewPropertyPage /> },
       { path: '/landlord/properties/:propertyId', element: <PropertyDetailPage /> },
       { path: '/landlord/inquiries', element: <LandlordInquiriesPage /> },
-      { path: '/landlord/tenancies', element: portal('Tenancies', 'Record and review active rental agreements.') },
+      { path: '/landlord/tenancies', element: <TenanciesPage /> },
       { path: '/landlord/payments', element: portal('Payments', 'Maintain the demo rent ledger.') },
       { path: '/landlord/maintenance', element: portal('Maintenance', 'Track requests through resolution.') },
       { path: '/landlord/profile', element: portal('Profile', 'Review your account details.') },
