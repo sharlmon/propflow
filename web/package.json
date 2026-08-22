@@ -16,8 +16,9 @@
     "format:check": "prettier . --check --ignore-path ../.prettierignore",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "contract:check": "redocly lint --config ../redocly.yaml ../docs/api/openapi.yaml",
     "check": "npm run format:check && npm run lint && npm run test && npm run build",
-    "prepare": "husky",
+    "prepare": "cd .. && husky .husky",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
     "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.58.2",
+    "@redocly/cli": "^2.2.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

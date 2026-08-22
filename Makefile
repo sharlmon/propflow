@@ -1,4 +1,4 @@
-.PHONY: dev api web test test-web test-api migrate-up migrate-down seed db-reset demo sqlc
+.PHONY: dev api web test test-web test-api test-e2e migrate-up migrate-down seed db-reset demo sqlc
 
 DATABASE_URL ?= postgres://propflow:propflow_dev_only@localhost:5432/propflow?sslmode=disable
 
@@ -18,6 +18,11 @@ test-api:
 
 test-web:
 	cd web && npm test
+
+test-e2e:
+	@test -n '$(TEST_DATABASE_URL)' || (echo "TEST_DATABASE_URL is required" && exit 1)
+	@echo '$(TEST_DATABASE_URL)' | grep -Eq '(_test|test_)' || (echo "Refusing non-test database URL" && exit 1)
+	cd web && TEST_DATABASE_URL='$(TEST_DATABASE_URL)' npm run test:e2e
 
 migrate-up:
 	migrate -path api/migrations -database '$(DATABASE_URL)' up

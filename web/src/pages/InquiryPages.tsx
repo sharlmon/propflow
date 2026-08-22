@@ -5,14 +5,174 @@ import type { Inquiry } from '../api/types';
 import { Button } from '../components/ui/Button';
 
 export function InquiryForm({ listingId }: { listingId: string }) {
-  const client=useQueryClient();
-  const mutation=useMutation({mutationFn:(message:string)=>apiRequest<Inquiry>(`/listings/${listingId}/inquiries`,{method:'POST',body:{message}}),onSuccess:()=>client.invalidateQueries({queryKey:['renter','inquiries']})});
-  function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();const form=event.currentTarget;const message=new FormData(form).get('message');if(typeof message==='string')mutation.mutate(message,{onSuccess:()=>form.reset()});}
-  return <form className="mt-5" onSubmit={submit}><label htmlFor="inquiry-message" className="mb-2 block text-sm font-semibold">Message to the landlord</label><textarea id="inquiry-message" name="message" required minLength={10} maxLength={2000} className="min-h-28 w-full rounded-xl border p-3" placeholder="Tell the landlord what you would like to know or when you can view the home." />{mutation.isError?<p role="alert" className="mt-2 text-sm text-red-700">{mutation.error.message}</p>:null}{mutation.isSuccess?<p role="status" className="mt-2 text-sm text-emerald-700">Inquiry sent. You can track it from your renter dashboard.</p>:null}<Button className="mt-3 w-full" type="submit" disabled={mutation.isPending}>{mutation.isPending?'Sending…':'Send inquiry'}</Button></form>;
+  const client = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (message: string) =>
+      apiRequest<Inquiry>(`/listings/${listingId}/inquiries`, { method: 'POST', body: { message } }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['renter', 'inquiries'] }),
+  });
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const message = new FormData(form).get('message');
+    if (typeof message === 'string') mutation.mutate(message, { onSuccess: () => form.reset() });
+  }
+  return (
+    <form className="mt-5" onSubmit={submit}>
+      <label htmlFor="inquiry-message" className="mb-2 block text-sm font-semibold">
+        Message to the landlord
+      </label>
+      <textarea
+        id="inquiry-message"
+        name="message"
+        required
+        minLength={10}
+        maxLength={2000}
+        className="min-h-28 w-full rounded-xl border p-3"
+        placeholder="Tell the landlord what you would like to know or when you can view the home."
+      />
+      {mutation.isError ? (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {mutation.error.message}
+        </p>
+      ) : null}
+      {mutation.isSuccess ? (
+        <p role="status" className="mt-2 text-sm text-emerald-700">
+          Inquiry sent. You can track it from your renter dashboard.
+        </p>
+      ) : null}
+      <Button className="mt-3 w-full" type="submit" disabled={mutation.isPending}>
+        {mutation.isPending ? 'Sending…' : 'Send inquiry'}
+      </Button>
+    </form>
+  );
 }
 
-function InquiryList({items,landlord,onStatus}:{items:Inquiry[];landlord:boolean;onStatus?:(id:string,status:Inquiry['status'])=>void}){if(items.length===0)return <div className="rounded-2xl border border-dashed bg-white p-10 text-center text-slate-600">No inquiries to show.</div>;return <div className="space-y-4">{items.map((item)=><article key={item.id} className="rounded-2xl border bg-white p-5 shadow-sm"><div className="flex flex-wrap items-start justify-between gap-3"><div><Link className="text-lg font-bold text-slate-950 hover:text-blue-700" to={`/listings/${item.listing_slug}`}>{item.listing_title}</Link><p className="text-sm text-slate-500">{item.locality} · {new Date(item.created_at).toLocaleDateString('en-KE')}</p>{landlord?<p className="mt-2 text-sm"><strong>{item.renter_name}</strong> · {item.renter_email}</p>:null}</div>{landlord?<select aria-label={`Status for ${item.listing_title}`} className="min-h-11 rounded-xl border bg-white px-3" value={item.status} onChange={(event)=>onStatus?.(item.id,event.target.value as Inquiry['status'])}>{['new','contacted','viewing_scheduled','accepted','closed'].map((status)=><option key={status} value={status}>{status.replace('_',' ')}</option>)}</select>:<span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">{item.status.replace('_',' ')}</span>}</div><p className="mt-4 rounded-xl bg-slate-50 p-4 text-slate-700">{item.message}</p></article>)}</div>}
+function InquiryList({
+  items,
+  landlord,
+  onStatus,
+}: {
+  items: Inquiry[];
+  landlord: boolean;
+  onStatus?: (id: string, status: Inquiry['status']) => void;
+}) {
+  if (items.length === 0)
+    return (
+      <div className="rounded-2xl border border-dashed bg-white p-10 text-center text-slate-600">
+        No inquiries to show.
+      </div>
+    );
+  return (
+    <div className="space-y-4">
+      {items.map((item) => (
+        <article key={item.id} className="rounded-2xl border bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <Link
+                className="text-lg font-bold text-slate-950 hover:text-blue-700"
+                to={`/listings/${item.listing_slug}`}
+              >
+                {item.listing_title}
+              </Link>
+              <p className="text-sm text-slate-500">
+                {item.locality} · {new Date(item.created_at).toLocaleDateString('en-KE')}
+              </p>
+              {landlord ? (
+                <p className="mt-2 text-sm">
+                  <strong>{item.renter_name}</strong> · {item.renter_email}
+                </p>
+              ) : null}
+            </div>
+            {landlord ? (
+              <select
+                aria-label={`Status for ${item.listing_title}`}
+                className="min-h-11 rounded-xl border bg-white px-3"
+                value={item.status}
+                onChange={(event) => onStatus?.(item.id, event.target.value as Inquiry['status'])}
+              >
+                {['new', 'contacted', 'viewing_scheduled', 'accepted', 'closed'].map((status) => (
+                  <option key={status} value={status}>
+                    {status.replace('_', ' ')}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                {item.status.replace('_', ' ')}
+              </span>
+            )}
+          </div>
+          <p className="mt-4 rounded-xl bg-slate-50 p-4 text-slate-700">{item.message}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
 
-export function RenterInquiriesPage(){const query=useQuery({queryKey:['renter','inquiries'],queryFn:({signal})=>apiRequest<Inquiry[]>('/renter/inquiries',{signal})});return <section><p className="text-sm font-semibold uppercase tracking-wider text-blue-700">FindYourKeja</p><h1 className="mt-2 text-3xl font-bold text-slate-950">Your inquiries</h1><p className="mt-2 text-slate-600">Track every rental question and viewing request.</p><div className="mt-7">{query.isLoading?<div className="h-48 animate-pulse rounded-2xl bg-white"/>:query.isError?<div role="alert" className="rounded-xl bg-red-50 p-4">{query.error.message}</div>:<InquiryList items={query.data||[]} landlord={false}/>}</div></section>}
+export function RenterInquiriesPage() {
+  const query = useQuery({
+    queryKey: ['renter', 'inquiries'],
+    queryFn: ({ signal }) => apiRequest<Inquiry[]>('/renter/inquiries', { signal }),
+  });
+  return (
+    <section>
+      <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">FindYourKeja</p>
+      <h1 className="mt-2 text-3xl font-bold text-slate-950">Your inquiries</h1>
+      <p className="mt-2 text-slate-600">Track every rental question and viewing request.</p>
+      <div className="mt-7">
+        {query.isLoading ? (
+          <div className="h-48 animate-pulse rounded-2xl bg-white" />
+        ) : query.isError ? (
+          <div role="alert" className="rounded-xl bg-red-50 p-4">
+            {query.error.message}
+          </div>
+        ) : (
+          <InquiryList items={query.data || []} landlord={false} />
+        )}
+      </div>
+    </section>
+  );
+}
 
-export function LandlordInquiriesPage(){const client=useQueryClient();const query=useQuery({queryKey:['landlord','inquiries'],queryFn:({signal})=>apiRequest<Inquiry[]>('/landlord/inquiries',{signal})});const update=useMutation({mutationFn:({id,status}:{id:string;status:Inquiry['status']})=>apiRequest(`/inquiries/${id}/status`,{method:'PATCH',body:{status}}),onSuccess:()=>client.invalidateQueries({queryKey:['landlord','inquiries']})});return <section><p className="text-sm font-semibold uppercase tracking-wider text-blue-700">Lead flow</p><h1 className="mt-2 text-3xl font-bold text-slate-950">Listing inquiries</h1><p className="mt-2 text-slate-600">Move each renter from first contact to an accepted inquiry or a clear close.</p>{update.isError?<p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-red-800">{update.error.message}</p>:null}<div className="mt-7">{query.isLoading?<div className="h-48 animate-pulse rounded-2xl bg-white"/>:query.isError?<div role="alert" className="rounded-xl bg-red-50 p-4">{query.error.message}</div>:<InquiryList items={query.data||[]} landlord onStatus={(id,status)=>update.mutate({id,status})}/>}</div></section>}
+export function LandlordInquiriesPage() {
+  const client = useQueryClient();
+  const query = useQuery({
+    queryKey: ['landlord', 'inquiries'],
+    queryFn: ({ signal }) => apiRequest<Inquiry[]>('/landlord/inquiries', { signal }),
+  });
+  const update = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: Inquiry['status'] }) =>
+      apiRequest(`/inquiries/${id}/status`, { method: 'PATCH', body: { status } }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['landlord', 'inquiries'] }),
+  });
+  return (
+    <section>
+      <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">Lead flow</p>
+      <h1 className="mt-2 text-3xl font-bold text-slate-950">Listing inquiries</h1>
+      <p className="mt-2 text-slate-600">
+        Move each renter from first contact to an accepted inquiry or a clear close.
+      </p>
+      {update.isError ? (
+        <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-red-800">
+          {update.error.message}
+        </p>
+      ) : null}
+      <div className="mt-7">
+        {query.isLoading ? (
+          <div className="h-48 animate-pulse rounded-2xl bg-white" />
+        ) : query.isError ? (
+          <div role="alert" className="rounded-xl bg-red-50 p-4">
+            {query.error.message}
+          </div>
+        ) : (
+          <InquiryList
+            items={query.data || []}
+            landlord
+            onStatus={(id, status) => update.mutate({ id, status })}
+          />
+        )}
+      </div>
+    </section>
+  );
+}

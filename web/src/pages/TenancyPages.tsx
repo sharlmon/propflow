@@ -4,7 +4,180 @@ import { apiRequest } from '../api/client';
 import type { Tenancy } from '../api/types';
 import { Button } from '../components/ui/Button';
 
-interface Options { units:Array<{id:string;property_name:string;unit_label:string;rent_amount:number;deposit_amount:number}>;tenants:Array<{id:string;full_name:string;email:string}> }
-const money=new Intl.NumberFormat('en-KE',{style:'currency',currency:'KES',maximumFractionDigits:0});
+interface Options {
+  units: Array<{
+    id: string;
+    property_name: string;
+    unit_label: string;
+    rent_amount: number;
+    deposit_amount: number;
+  }>;
+  tenants: Array<{ id: string; full_name: string; email: string }>;
+}
+const money = new Intl.NumberFormat('en-KE', {
+  style: 'currency',
+  currency: 'KES',
+  maximumFractionDigits: 0,
+});
 
-export function TenanciesPage(){const client=useQueryClient();const [showForm,setShowForm]=useState(false);const query=useQuery({queryKey:['tenancies'],queryFn:({signal})=>apiRequest<Tenancy[]>('/tenancies',{signal})});const options=useQuery({queryKey:['tenancy-options'],queryFn:({signal})=>apiRequest<Options>('/tenancy-options',{signal}),enabled:showForm});const create=useMutation({mutationFn:(body:Record<string,unknown>)=>apiRequest('/tenancies',{method:'POST',body}),onSuccess:async()=>{setShowForm(false);await client.invalidateQueries({queryKey:['tenancies']});await client.invalidateQueries({queryKey:['properties']})}});function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();const values=Object.fromEntries(new FormData(event.currentTarget));create.mutate({...values,monthly_rent:Number(values.monthly_rent),deposit_amount:Number(values.deposit_amount)})}return <section><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-wider text-blue-700">Occupancy</p><h1 className="mt-2 text-3xl font-bold text-slate-950">Tenancies</h1><p className="mt-2 text-slate-600">Create an active tenancy and move the unit out of the marketplace.</p></div><Button onClick={()=>setShowForm((value)=>!value)}>{showForm?'Cancel':'Create tenancy'}</Button></div>{showForm?<form onSubmit={submit} className="mt-7 grid gap-4 rounded-2xl border bg-white p-6 sm:grid-cols-2"><label><span className="mb-2 block text-sm font-semibold">Available unit</span><select required name="unit_id" className="min-h-11 w-full rounded-xl border bg-white px-3"><option value="">Choose a unit</option>{options.data?.units.map((unit)=><option key={unit.id} value={unit.id}>{unit.property_name} · {unit.unit_label}</option>)}</select></label><label><span className="mb-2 block text-sm font-semibold">Renter</span><select required name="tenant_id" className="min-h-11 w-full rounded-xl border bg-white px-3"><option value="">Choose a renter</option>{options.data?.tenants.map((tenant)=><option key={tenant.id} value={tenant.id}>{tenant.full_name} · {tenant.email}</option>)}</select></label><label><span className="mb-2 block text-sm font-semibold">Start date</span><input required name="start_date" type="date" className="min-h-11 w-full rounded-xl border px-3" /></label><label><span className="mb-2 block text-sm font-semibold">End date (optional)</span><input name="end_date" type="date" className="min-h-11 w-full rounded-xl border px-3" /></label><label><span className="mb-2 block text-sm font-semibold">Monthly rent</span><input required min="0" name="monthly_rent" type="number" className="min-h-11 w-full rounded-xl border px-3" /></label><label><span className="mb-2 block text-sm font-semibold">Deposit</span><input required min="0" name="deposit_amount" type="number" className="min-h-11 w-full rounded-xl border px-3" /></label>{create.isError?<p role="alert" className="sm:col-span-2 text-red-700">{create.error.message}</p>:null}<div className="sm:col-span-2"><Button type="submit" disabled={create.isPending}>{create.isPending?'Creating…':'Create active tenancy'}</Button></div></form>:null}<div className="mt-7">{query.isLoading?<div className="h-48 animate-pulse rounded-2xl bg-white"/>:query.isError?<div role="alert" className="rounded-xl bg-red-50 p-4">{query.error.message}</div>:query.data?.length===0?<div className="rounded-2xl border border-dashed bg-white p-10 text-center">No tenancies recorded.</div>:<div className="overflow-x-auto rounded-2xl border bg-white"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-slate-50"><tr><th className="p-4">Home</th><th className="p-4">Tenant</th><th className="p-4">Dates</th><th className="p-4">Monthly rent</th><th className="p-4">Status</th></tr></thead><tbody>{query.data?.map((item)=><tr key={item.id} className="border-t"><td className="p-4 font-semibold">{item.property_name} · {item.unit_label}</td><td className="p-4">{item.tenant_name}<span className="block text-xs text-slate-500">{item.tenant_email}</span></td><td className="p-4">{new Date(item.start_date).toLocaleDateString('en-KE')} – {item.end_date?new Date(item.end_date).toLocaleDateString('en-KE'):'ongoing'}</td><td className="p-4">{money.format(item.monthly_rent)}</td><td className="p-4">{item.status}</td></tr>)}</tbody></table></div>}</div></section>}
+export function TenanciesPage() {
+  const client = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
+  const query = useQuery({
+    queryKey: ['tenancies'],
+    queryFn: ({ signal }) => apiRequest<Tenancy[]>('/tenancies', { signal }),
+  });
+  const options = useQuery({
+    queryKey: ['tenancy-options'],
+    queryFn: ({ signal }) => apiRequest<Options>('/tenancy-options', { signal }),
+    enabled: showForm,
+  });
+  const create = useMutation({
+    mutationFn: (body: Record<string, unknown>) => apiRequest('/tenancies', { method: 'POST', body }),
+    onSuccess: async () => {
+      setShowForm(false);
+      await client.invalidateQueries({ queryKey: ['tenancies'] });
+      await client.invalidateQueries({ queryKey: ['properties'] });
+    },
+  });
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    create.mutate({
+      ...values,
+      monthly_rent: Number(values.monthly_rent),
+      deposit_amount: Number(values.deposit_amount),
+    });
+  }
+  return (
+    <section>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider text-blue-700">Occupancy</p>
+          <h1 className="mt-2 text-3xl font-bold text-slate-950">Tenancies</h1>
+          <p className="mt-2 text-slate-600">
+            Create an active tenancy and move the unit out of the marketplace.
+          </p>
+        </div>
+        <Button onClick={() => setShowForm((value) => !value)}>
+          {showForm ? 'Cancel' : 'Create tenancy'}
+        </Button>
+      </div>
+      {showForm ? (
+        <form onSubmit={submit} className="mt-7 grid gap-4 rounded-2xl border bg-white p-6 sm:grid-cols-2">
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Available unit</span>
+            <select required name="unit_id" className="min-h-11 w-full rounded-xl border bg-white px-3">
+              <option value="">Choose a unit</option>
+              {options.data?.units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.property_name} · {unit.unit_label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Renter</span>
+            <select required name="tenant_id" className="min-h-11 w-full rounded-xl border bg-white px-3">
+              <option value="">Choose a renter</option>
+              {options.data?.tenants.map((tenant) => (
+                <option key={tenant.id} value={tenant.id}>
+                  {tenant.full_name} · {tenant.email}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Start date</span>
+            <input
+              required
+              name="start_date"
+              type="date"
+              className="min-h-11 w-full rounded-xl border px-3"
+            />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">End date (optional)</span>
+            <input name="end_date" type="date" className="min-h-11 w-full rounded-xl border px-3" />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Monthly rent</span>
+            <input
+              required
+              min="0"
+              name="monthly_rent"
+              type="number"
+              className="min-h-11 w-full rounded-xl border px-3"
+            />
+          </label>
+          <label>
+            <span className="mb-2 block text-sm font-semibold">Deposit</span>
+            <input
+              required
+              min="0"
+              name="deposit_amount"
+              type="number"
+              className="min-h-11 w-full rounded-xl border px-3"
+            />
+          </label>
+          {create.isError ? (
+            <p role="alert" className="sm:col-span-2 text-red-700">
+              {create.error.message}
+            </p>
+          ) : null}
+          <div className="sm:col-span-2">
+            <Button type="submit" disabled={create.isPending}>
+              {create.isPending ? 'Creating…' : 'Create active tenancy'}
+            </Button>
+          </div>
+        </form>
+      ) : null}
+      <div className="mt-7">
+        {query.isLoading ? (
+          <div className="h-48 animate-pulse rounded-2xl bg-white" />
+        ) : query.isError ? (
+          <div role="alert" className="rounded-xl bg-red-50 p-4">
+            {query.error.message}
+          </div>
+        ) : query.data?.length === 0 ? (
+          <div className="rounded-2xl border border-dashed bg-white p-10 text-center">
+            No tenancies recorded.
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border bg-white">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="p-4">Home</th>
+                  <th className="p-4">Tenant</th>
+                  <th className="p-4">Dates</th>
+                  <th className="p-4">Monthly rent</th>
+                  <th className="p-4">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {query.data?.map((item) => (
+                  <tr key={item.id} className="border-t">
+                    <td className="p-4 font-semibold">
+                      {item.property_name} · {item.unit_label}
+                    </td>
+                    <td className="p-4">
+                      {item.tenant_name}
+                      <span className="block text-xs text-slate-500">{item.tenant_email}</span>
+                    </td>
+                    <td className="p-4">
+                      {new Date(item.start_date).toLocaleDateString('en-KE')} –{' '}
+                      {item.end_date ? new Date(item.end_date).toLocaleDateString('en-KE') : 'ongoing'}
+                    </td>
+                    <td className="p-4">{money.format(item.monthly_rent)}</td>
+                    <td className="p-4">{item.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

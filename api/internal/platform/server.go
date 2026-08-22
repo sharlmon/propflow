@@ -58,6 +58,7 @@ func (s *Server) Routes() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(s.recoverer)
 	r.Use(s.securityHeaders)
+	r.Use(s.cors)
 	r.Use(middleware.Compress(5))
 	r.Use(middleware.Timeout(30 * time.Second))
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
@@ -70,7 +71,7 @@ func (s *Server) Routes() http.Handler {
 			writeData(w, http.StatusOK, map[string]string{"service": "propflow-api"}, nil)
 		})
 		api.Get("/listings", s.listListings)
-		api.Get("/listings/{slug}", s.getListingBySlug)
+		api.Get("/listings/{listingRef}", s.getListingBySlug)
 		api.With(s.rateLimit("auth", 10, time.Minute)).Post("/auth/register", s.register)
 		api.With(s.rateLimit("auth", 10, time.Minute)).Post("/auth/login", s.login)
 		api.Group(func(protected chi.Router) {
@@ -99,7 +100,7 @@ func (s *Server) Routes() http.Handler {
 				landlord.Patch("/units/{unitId}", s.updateUnit)
 				landlord.Delete("/units/{unitId}", s.deleteUnit)
 				landlord.Post("/units/{unitId}/listing", s.createListing)
-				landlord.Patch("/listings/{listingId}", s.updateListing)
+				landlord.Patch("/listings/{listingRef}", s.updateListing)
 				landlord.Post("/listings/{listingId}/publish", s.publishListing)
 				landlord.Post("/listings/{listingId}/unpublish", s.unpublishListing)
 				landlord.Get("/landlord/inquiries", s.landlordInquiries)
@@ -113,6 +114,28 @@ func (s *Server) Routes() http.Handler {
 		})
 	})
 	return r
+}
+
+func (s *Server) cors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == s.config.AppOrigin {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, HEAD, POST, PATCH, DELETE, OPTIONS")
+			w.Header().Add("Vary", "Origin")
+		}
+		if r.Method == http.MethodOptions {
+			if origin != s.config.AppOrigin {
+				writeError(w, r, http.StatusForbidden, "invalid_origin", "The request origin is not allowed.", nil)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) ready(w http.ResponseWriter, r *http.Request) {

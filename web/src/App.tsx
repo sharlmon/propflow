@@ -33,31 +33,47 @@ export const router = createBrowserRouter([
   },
   {
     element: <ProtectedRoute roles={['landlord']} />,
-    children: [{ element: <PortalLayout />, children: [
-      { path: '/landlord/dashboard', element: <LandlordDashboardPage /> },
-      { path: '/landlord/properties', element: <PropertiesPage /> },
-      { path: '/landlord/properties/new', element: <NewPropertyPage /> },
-      { path: '/landlord/properties/:propertyId', element: <PropertyDetailPage /> },
-      { path: '/landlord/inquiries', element: <LandlordInquiriesPage /> },
-      { path: '/landlord/tenancies', element: <TenanciesPage /> },
-      { path: '/landlord/payments', element: <PaymentsPage /> },
-      { path: '/landlord/maintenance', element: <MaintenancePage /> },
-      { path: '/landlord/profile', element: <ProfilePage /> },
-    ] }],
+    children: [
+      {
+        element: <PortalLayout />,
+        children: [
+          { path: '/landlord/dashboard', element: <LandlordDashboardPage /> },
+          { path: '/landlord/properties', element: <PropertiesPage /> },
+          { path: '/landlord/properties/new', element: <NewPropertyPage /> },
+          { path: '/landlord/properties/:propertyId', element: <PropertyDetailPage /> },
+          { path: '/landlord/inquiries', element: <LandlordInquiriesPage /> },
+          { path: '/landlord/tenancies', element: <TenanciesPage /> },
+          { path: '/landlord/payments', element: <PaymentsPage /> },
+          { path: '/landlord/maintenance', element: <MaintenancePage /> },
+          { path: '/landlord/profile', element: <ProfilePage /> },
+        ],
+      },
+    ],
   },
   {
     element: <ProtectedRoute roles={['renter']} />,
-    children: [{ element: <PortalLayout />, children: [
-      { path: '/renter/dashboard', element: <RenterDashboardPage /> },
-      { path: '/renter/inquiries', element: <RenterInquiriesPage /> },
-      { path: '/renter/maintenance', element: <MaintenancePage /> },
-      { path: '/renter/profile', element: <ProfilePage /> },
-    ] }],
+    children: [
+      {
+        element: <PortalLayout />,
+        children: [
+          { path: '/renter/dashboard', element: <RenterDashboardPage /> },
+          { path: '/renter/inquiries', element: <RenterInquiriesPage /> },
+          { path: '/renter/maintenance', element: <MaintenancePage /> },
+          { path: '/renter/profile', element: <ProfilePage /> },
+        ],
+      },
+    ],
   },
   { path: '/permission-denied', element: <PermissionDeniedPage /> },
   { path: '*', element: <NotFoundPage /> },
 ]);
 
 export default function App() {
-  return <QueryClientProvider client={queryClient}><AuthProvider><RouterProvider router={router} /></AuthProvider></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }
