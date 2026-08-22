@@ -37,5 +37,16 @@ export default defineConfig({
         },
       ]
     : undefined,
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      testMatch: /golden-path\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'mobile-chromium',
+      testMatch: /mobile-navigation\.spec\.ts/,
+      use: { ...devices['Pixel 5'], viewport: { width: 360, height: 800 } },
+    },
+  ],
 });
