@@ -106,3 +106,16 @@ export interface Tenancy {
   deposit_amount: number;
   status: 'pending' | 'active' | 'ended' | 'cancelled';
 }
+
+export interface Payment {
+  id: string;
+  tenancy_id: string;
+  amount: number;
+  method: 'cash' | 'bank' | 'mpesa_demo';
+  reference: string;
+  status: 'recorded' | 'reversed';
+  paid_at: string;
+  property_name: string;
+  unit_label: string;
+  tenant_name: string;
+}
