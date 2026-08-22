@@ -2,8 +2,8 @@
 
 | Branch | Product outcome | Frontend tasks | Backend tasks | Database tasks | QA tasks | Dependencies | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `chore/mvp-foundation` | Runnable full-stack base | Relocate Vite, config/router base, tokens | Health/readiness, middleware shell | Initial additive schema, SQLC config | Baseline/audit/build | None | In progress |
-| `feat/auth-access` | Real identity and access | Auth forms/layout guards | Argon2id sessions/RBAC | Users, orgs, members, sessions, audits | Auth/unit/route tests | Foundation | Pending |
+| `chore/mvp-foundation` | Runnable full-stack base | Relocate Vite, config/router base, tokens | Health/readiness, middleware shell | Initial additive schema, SQLC config | Baseline/audit/build | None | Complete |
+| `feat/auth-access` | Real identity and access | Auth forms/layout guards | Argon2id sessions/RBAC | Users, orgs, members, sessions, audits | Auth/unit/route tests | Foundation | Complete |
 | `feat/properties-units` | Landlord inventory | CRUD pages/forms | Ownership/business rules | Property/unit queries | Validation/ownership tests | Auth | Pending |
 | `feat/marketplace-listings` | Public rental discovery | Search/detail/publish UI | Filters and publication rules | Listing/image queries/indexes | Filter and routing tests | Inventory | Pending |
 | `feat/listing-inquiries` | Renter-to-landlord lead | Inquiry form/inbox | Status and authorization | Inquiry queries/audits | Workflow tests | Marketplace | Pending |

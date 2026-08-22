@@ -1,51 +1,58 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Link, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthProvider';
+import { ProtectedRoute } from './auth/RouteGuards';
+import { PortalLayout } from './layouts/PortalLayout';
+import { PublicLayout } from './layouts/PublicLayout';
+import { LoginPage, RegisterPage } from './pages/AuthPages';
+import { HomePage, NotFoundPage, PermissionDeniedPage, SectionPage } from './pages/FoundationPages';
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 30_000, retry: 1 },
-    mutations: { retry: 0 },
-  },
+  defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
 });
 
-function FoundationPage() {
-  return (
-    <main className="min-h-screen bg-slate-50 px-6 py-20 text-slate-900">
-      <div className="mx-auto max-w-3xl rounded-2xl border border-blue-100 bg-white p-10 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">FindYourKeja</p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight">Powered by PropFlow</h1>
-        <p className="mt-4 max-w-2xl text-slate-600">
-          The full-stack marketplace and property-operations MVP foundation is ready. Product routes are added as
-          their database-backed vertical slices are completed.
-        </p>
-      </div>
-    </main>
-  );
-}
+const portal = (title: string, description: string) => <SectionPage title={title} description={description} />;
 
-function NotFoundPage() {
-  return (
-    <main className="grid min-h-screen place-items-center bg-slate-50 p-6">
-      <div className="text-center">
-        <p className="text-sm font-semibold text-blue-700">404</p>
-        <h1 className="mt-2 text-3xl font-bold">Page not found</h1>
-        <Link className="mt-6 inline-block font-semibold text-blue-700 underline" to="/">
-          Return home
-        </Link>
-      </div>
-    </main>
-  );
-}
-
-const router = createBrowserRouter([
-  { path: '/', element: <FoundationPage /> },
+// Exported for route-level tests.
+// eslint-disable-next-line react-refresh/only-export-components
+export const router = createBrowserRouter([
+  {
+    element: <PublicLayout />,
+    children: [
+      { path: '/', element: <HomePage /> },
+      { path: '/listings', element: portal('Rental marketplace', 'Search current public rental listings.') },
+      { path: '/listings/:slug', element: portal('Listing details', 'Review the home and send an inquiry.') },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+    ],
+  },
+  {
+    element: <ProtectedRoute roles={['landlord']} />,
+    children: [{ element: <PortalLayout />, children: [
+      { path: '/landlord/dashboard', element: portal('Dashboard', 'Your live portfolio overview.') },
+      { path: '/landlord/properties', element: portal('Properties', 'Manage properties and rentable units.') },
+      { path: '/landlord/properties/new', element: portal('New property', 'Add a property to your portfolio.') },
+      { path: '/landlord/properties/:propertyId', element: portal('Property details', 'Manage this property and its units.') },
+      { path: '/landlord/inquiries', element: portal('Inquiries', 'Review renter interest and update progress.') },
+      { path: '/landlord/tenancies', element: portal('Tenancies', 'Record and review active rental agreements.') },
+      { path: '/landlord/payments', element: portal('Payments', 'Maintain the demo rent ledger.') },
+      { path: '/landlord/maintenance', element: portal('Maintenance', 'Track requests through resolution.') },
+      { path: '/landlord/profile', element: portal('Profile', 'Review your account details.') },
+    ] }],
+  },
+  {
+    element: <ProtectedRoute roles={['renter']} />,
+    children: [{ element: <PortalLayout />, children: [
+      { path: '/renter/dashboard', element: portal('Dashboard', 'Your rental activity at a glance.') },
+      { path: '/renter/inquiries', element: portal('Inquiries', 'Review your listing inquiries.') },
+      { path: '/renter/maintenance', element: portal('Maintenance', 'Submit and follow maintenance requests.') },
+      { path: '/renter/profile', element: portal('Profile', 'Review your account details.') },
+    ] }],
+  },
+  { path: '/permission-denied', element: <PermissionDeniedPage /> },
   { path: '*', element: <NotFoundPage /> },
 ]);
 
 export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}><AuthProvider><RouterProvider router={router} /></AuthProvider></QueryClientProvider>;
 }

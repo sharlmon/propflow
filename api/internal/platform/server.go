@@ -45,10 +45,11 @@ type Server struct {
 	db     *pgxpool.Pool
 	logger *slog.Logger
 	config Config
+	limits *ipLimiter
 }
 
 func NewServer(db *pgxpool.Pool, logger *slog.Logger, config Config) *Server {
-	return &Server{db: db, logger: logger, config: config}
+	return &Server{db: db, logger: logger, config: config, limits: newIPLimiter()}
 }
 
 func (s *Server) Routes() http.Handler {
@@ -64,8 +65,16 @@ func (s *Server) Routes() http.Handler {
 	})
 	r.Get("/readyz", s.ready)
 	r.Route("/api/v1", func(api chi.Router) {
+		api.Use(s.requireOrigin)
 		api.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 			writeData(w, http.StatusOK, map[string]string{"service": "propflow-api"}, nil)
+		})
+		api.With(s.rateLimit("auth", 10, time.Minute)).Post("/auth/register", s.register)
+		api.With(s.rateLimit("auth", 10, time.Minute)).Post("/auth/login", s.login)
+		api.Group(func(protected chi.Router) {
+			protected.Use(s.authenticate)
+			protected.Post("/auth/logout", s.logout)
+			protected.Get("/me", s.me)
 		})
 	})
 	return r
