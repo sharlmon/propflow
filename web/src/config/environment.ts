@@ -5,7 +5,6 @@ interface EnvironmentConfig {
   appUrl: string;
   apiBaseUrl: string;
   environment: RuntimeEnvironment;
-  geminiApiKey: string;
   mapProvider: 'mapbox' | 'google' | 'disabled';
   mapboxToken: string;
   sentryDsn: string;
@@ -23,7 +22,6 @@ export const env: EnvironmentConfig = {
   appUrl: readEnv('VITE_APP_URL', 'http://localhost:5173'),
   apiBaseUrl: readEnv('VITE_API_BASE_URL', '/api'),
   environment: normalizeEnvironment(readEnv('MODE', import.meta.env.MODE)),
-  geminiApiKey: readEnv('VITE_GEMINI_API_KEY'),
   mapProvider:
     readEnv('VITE_MAP_PROVIDER', 'disabled') === 'mapbox'
       ? 'mapbox'

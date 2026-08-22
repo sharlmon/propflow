@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS maintenance_requests;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS tenancies;
+DROP TABLE IF EXISTS inquiries;
+DROP TABLE IF EXISTS listing_images;
+DROP TABLE IF EXISTS listings;
+DROP TABLE IF EXISTS units;
+DROP TABLE IF EXISTS properties;
+DROP TABLE IF EXISTS organization_members;
+DROP TABLE IF EXISTS organizations;
+DROP TABLE IF EXISTS users;

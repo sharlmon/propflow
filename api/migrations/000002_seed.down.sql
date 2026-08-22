@@ -1,0 +1,12 @@
+DELETE FROM audit_logs;
+DELETE FROM maintenance_requests;
+DELETE FROM payments;
+DELETE FROM tenancies;
+DELETE FROM inquiries;
+DELETE FROM listing_images;
+DELETE FROM listings;
+DELETE FROM units;
+DELETE FROM properties;
+DELETE FROM organization_members;
+DELETE FROM organizations;
+DELETE FROM users WHERE email LIKE '%@propflow.demo';

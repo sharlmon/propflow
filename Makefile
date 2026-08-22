@@ -1,0 +1,39 @@
+.PHONY: dev api web test test-web test-api migrate-up migrate-down seed db-reset demo sqlc
+
+DATABASE_URL ?= postgres://propflow:propflow_dev_only@localhost:5432/propflow?sslmode=disable
+
+dev:
+	@echo "Run 'make api' and 'make web' in separate terminals."
+
+api:
+	cd api && DATABASE_URL='$(DATABASE_URL)' go run ./cmd/api
+
+web:
+	cd web && npm run dev
+
+test: test-api test-web
+
+test-api:
+	cd api && go test ./...
+
+test-web:
+	cd web && npm test
+
+migrate-up:
+	migrate -path api/migrations -database '$(DATABASE_URL)' up
+
+migrate-down:
+	migrate -path api/migrations -database '$(DATABASE_URL)' down 1
+
+seed:
+	psql '$(DATABASE_URL)' -v ON_ERROR_STOP=1 -f api/migrations/000002_seed.up.sql
+
+db-reset:
+	migrate -path api/migrations -database '$(DATABASE_URL)' drop -f
+	migrate -path api/migrations -database '$(DATABASE_URL)' up
+
+demo:
+	docker compose up --build
+
+sqlc:
+	cd api && sqlc generate
