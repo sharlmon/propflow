@@ -6,7 +6,7 @@
 | `feat/auth-access` | Real identity and access | Auth forms/layout guards | Argon2id sessions/RBAC | Users, orgs, members, sessions, audits | Auth/unit/route tests | Foundation | Complete |
 | `feat/properties-units` | Landlord inventory | CRUD pages/forms | Ownership/business rules | Property/unit queries | Validation/ownership tests | Auth | Complete |
 | `feat/marketplace-listings` | Public rental discovery | Search/detail/publish UI | Filters and publication rules | Listing/image queries/indexes | Filter and routing tests | Inventory | Complete |
-| `feat/listing-inquiries` | Renter-to-landlord lead | Inquiry form/inbox | Status and authorization | Inquiry queries/audits | Workflow tests | Marketplace | Pending |
+| `feat/listing-inquiries` | Renter-to-landlord lead | Inquiry form/inbox | Status and authorization | Inquiry queries/audits | Workflow tests | Marketplace | Complete |
 | `feat/tenancies-leases` | Active tenancy record | Tenancy forms/views | Transaction/conflict checks | Tenancy queries/partial index | Conflict tests | Inquiries | Pending |
 | `feat/payments-ledger` | Demo rent ledger | Record/view pages | Ledger rules | Payment queries | Authorization tests | Tenancies | Pending |
 | `feat/maintenance-workflow` | Repair lifecycle | Renter/landlord pages | Transition state machine | Maintenance queries | Transition tests | Tenancies | Pending |

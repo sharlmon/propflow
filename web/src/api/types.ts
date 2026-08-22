@@ -76,3 +76,17 @@ export interface Listing {
   image_alt: string;
   organization_name?: string;
 }
+
+export interface Inquiry {
+  id: string;
+  listing_id: string;
+  renter_id: string;
+  message: string;
+  status: 'new' | 'contacted' | 'viewing_scheduled' | 'accepted' | 'closed';
+  created_at: string;
+  listing_title: string;
+  listing_slug: string;
+  locality: string;
+  renter_name?: string;
+  renter_email?: string;
+}
