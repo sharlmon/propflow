@@ -6,6 +6,7 @@ import { PortalLayout } from './layouts/PortalLayout';
 import { PublicLayout } from './layouts/PublicLayout';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import { HomePage, NotFoundPage, PermissionDeniedPage, SectionPage } from './pages/FoundationPages';
+import { NewPropertyPage, PropertiesPage, PropertyDetailPage } from './pages/InventoryPages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
@@ -30,9 +31,9 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute roles={['landlord']} />,
     children: [{ element: <PortalLayout />, children: [
       { path: '/landlord/dashboard', element: portal('Dashboard', 'Your live portfolio overview.') },
-      { path: '/landlord/properties', element: portal('Properties', 'Manage properties and rentable units.') },
-      { path: '/landlord/properties/new', element: portal('New property', 'Add a property to your portfolio.') },
-      { path: '/landlord/properties/:propertyId', element: portal('Property details', 'Manage this property and its units.') },
+      { path: '/landlord/properties', element: <PropertiesPage /> },
+      { path: '/landlord/properties/new', element: <NewPropertyPage /> },
+      { path: '/landlord/properties/:propertyId', element: <PropertyDetailPage /> },
       { path: '/landlord/inquiries', element: portal('Inquiries', 'Review renter interest and update progress.') },
       { path: '/landlord/tenancies', element: portal('Tenancies', 'Record and review active rental agreements.') },
       { path: '/landlord/payments', element: portal('Payments', 'Maintain the demo rent ledger.') },

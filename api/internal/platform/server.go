@@ -75,6 +75,18 @@ func (s *Server) Routes() http.Handler {
 			protected.Use(s.authenticate)
 			protected.Post("/auth/logout", s.logout)
 			protected.Get("/me", s.me)
+			protected.Group(func(landlord chi.Router) {
+				landlord.Use(requireRole("landlord"))
+				landlord.Get("/properties", s.listProperties)
+				landlord.Post("/properties", s.createProperty)
+				landlord.Get("/properties/{propertyId}", s.getProperty)
+				landlord.Patch("/properties/{propertyId}", s.updateProperty)
+				landlord.Delete("/properties/{propertyId}", s.deleteProperty)
+				landlord.Get("/properties/{propertyId}/units", s.listUnits)
+				landlord.Post("/properties/{propertyId}/units", s.createUnit)
+				landlord.Patch("/units/{unitId}", s.updateUnit)
+				landlord.Delete("/units/{unitId}", s.deleteUnit)
+			})
 		})
 	})
 	return r
