@@ -8,7 +8,7 @@
 | `feat/marketplace-listings` | Public rental discovery | Search/detail/publish UI | Filters and publication rules | Listing/image queries/indexes | Filter and routing tests | Inventory | Complete |
 | `feat/listing-inquiries` | Renter-to-landlord lead | Inquiry form/inbox | Status and authorization | Inquiry queries/audits | Workflow tests | Marketplace | Complete |
 | `feat/tenancies-leases` | Active tenancy record | Tenancy forms/views | Transaction/conflict checks | Tenancy queries/partial index | Conflict tests | Inquiries | Complete |
-| `feat/payments-ledger` | Demo rent ledger | Record/view pages | Ledger rules | Payment queries | Authorization tests | Tenancies | Pending |
+| `feat/payments-ledger` | Demo rent ledger | Record/view pages | Ledger rules | Payment queries | Authorization tests | Tenancies | Complete |
 | `feat/maintenance-workflow` | Repair lifecycle | Renter/landlord pages | Transition state machine | Maintenance queries | Transition tests | Tenancies | Pending |
 | `feat/dashboard-analytics` | Real operating metrics | Metric/recent cards | Scoped aggregation | Dashboard queries/index review | Empty/error/aggregate tests | All domains | Pending |
 | `test/golden-path-e2e` | Reproducible journey | Stable semantic selectors | Test reset support | Isolated test DB | Playwright | All features | Pending |
