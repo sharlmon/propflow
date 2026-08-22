@@ -11,6 +11,7 @@ import { ListingDetailPage, MarketplacePage } from './pages/MarketplacePages';
 import { LandlordInquiriesPage, RenterInquiriesPage } from './pages/InquiryPages';
 import { TenanciesPage } from './pages/TenancyPages';
 import { PaymentsPage } from './pages/PaymentPages';
+import { MaintenancePage } from './pages/MaintenancePages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
@@ -41,7 +42,7 @@ export const router = createBrowserRouter([
       { path: '/landlord/inquiries', element: <LandlordInquiriesPage /> },
       { path: '/landlord/tenancies', element: <TenanciesPage /> },
       { path: '/landlord/payments', element: <PaymentsPage /> },
-      { path: '/landlord/maintenance', element: portal('Maintenance', 'Track requests through resolution.') },
+      { path: '/landlord/maintenance', element: <MaintenancePage /> },
       { path: '/landlord/profile', element: portal('Profile', 'Review your account details.') },
     ] }],
   },
@@ -50,7 +51,7 @@ export const router = createBrowserRouter([
     children: [{ element: <PortalLayout />, children: [
       { path: '/renter/dashboard', element: portal('Dashboard', 'Your rental activity at a glance.') },
       { path: '/renter/inquiries', element: <RenterInquiriesPage /> },
-      { path: '/renter/maintenance', element: portal('Maintenance', 'Submit and follow maintenance requests.') },
+      { path: '/renter/maintenance', element: <MaintenancePage /> },
       { path: '/renter/profile', element: portal('Profile', 'Review your account details.') },
     ] }],
   },
