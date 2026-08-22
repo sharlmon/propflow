@@ -1,6 +1,6 @@
 import { Building2, Menu, LogOut, X } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 
 const landlordLinks = [
@@ -22,11 +22,9 @@ const renterLinks = [
 export function PortalLayout() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const links = user?.role === 'landlord' ? landlordLinks : renterLinks;
   async function signOut() {
     await logout();
-    navigate('/');
   }
   return (
     <div className="min-h-screen bg-[#F6F9FF] lg:flex">
