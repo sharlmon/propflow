@@ -10,7 +10,7 @@
 | `feat/tenancies-leases` | Active tenancy record | Tenancy forms/views | Transaction/conflict checks | Tenancy queries/partial index | Conflict tests | Inquiries | Complete |
 | `feat/payments-ledger` | Demo rent ledger | Record/view pages | Ledger rules | Payment queries | Authorization tests | Tenancies | Complete |
 | `feat/maintenance-workflow` | Repair lifecycle | Renter/landlord pages | Transition state machine | Maintenance queries | Transition tests | Tenancies | Complete |
-| `feat/dashboard-analytics` | Real operating metrics | Metric/recent cards | Scoped aggregation | Dashboard queries/index review | Empty/error/aggregate tests | All domains | Pending |
+| `feat/dashboard-analytics` | Real operating metrics | Metric/recent cards | Scoped aggregation | Dashboard queries/index review | Empty/error/aggregate tests | All domains | Complete |
 | `test/golden-path-e2e` | Reproducible journey | Stable semantic selectors | Test reset support | Isolated test DB | Playwright | All features | Pending |
 | `ci/mvp-quality-gates` | Merge protection | npm quality job | Go quality job | Migration/integration job | Contract/security jobs | Tests | Pending |
 | `chore/demo-deployment` | Wednesday demo | Production build | Image/health config | Deterministic seed | Regression/demo script | CI | Pending |
