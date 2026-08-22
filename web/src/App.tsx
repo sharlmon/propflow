@@ -7,6 +7,7 @@ import { PublicLayout } from './layouts/PublicLayout';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import { HomePage, NotFoundPage, PermissionDeniedPage, SectionPage } from './pages/FoundationPages';
 import { NewPropertyPage, PropertiesPage, PropertyDetailPage } from './pages/InventoryPages';
+import { ListingDetailPage, MarketplacePage } from './pages/MarketplacePages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 }, mutations: { retry: 0 } },
@@ -21,8 +22,8 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/listings', element: portal('Rental marketplace', 'Search current public rental listings.') },
-      { path: '/listings/:slug', element: portal('Listing details', 'Review the home and send an inquiry.') },
+      { path: '/listings', element: <MarketplacePage /> },
+      { path: '/listings/:slug', element: <ListingDetailPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
     ],

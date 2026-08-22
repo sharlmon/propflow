@@ -54,3 +54,25 @@ export interface PropertyDetail {
   property: Property;
   units: Unit[];
 }
+
+export interface Listing {
+  id: string;
+  property_id: string;
+  unit_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  rent_amount: number;
+  deposit_amount: number;
+  amenities: string[];
+  status: 'draft' | 'published' | 'unpublished' | 'rented';
+  published_at?: string;
+  property_name: string;
+  locality: string;
+  county: string;
+  bedrooms: number;
+  bathrooms: number;
+  image_url: string;
+  image_alt: string;
+  organization_name?: string;
+}

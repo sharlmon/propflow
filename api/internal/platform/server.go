@@ -69,6 +69,8 @@ func (s *Server) Routes() http.Handler {
 		api.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 			writeData(w, http.StatusOK, map[string]string{"service": "propflow-api"}, nil)
 		})
+		api.Get("/listings", s.listListings)
+		api.Get("/listings/{slug}", s.getListingBySlug)
 		api.With(s.rateLimit("auth", 10, time.Minute)).Post("/auth/register", s.register)
 		api.With(s.rateLimit("auth", 10, time.Minute)).Post("/auth/login", s.login)
 		api.Group(func(protected chi.Router) {
@@ -86,6 +88,10 @@ func (s *Server) Routes() http.Handler {
 				landlord.Post("/properties/{propertyId}/units", s.createUnit)
 				landlord.Patch("/units/{unitId}", s.updateUnit)
 				landlord.Delete("/units/{unitId}", s.deleteUnit)
+				landlord.Post("/units/{unitId}/listing", s.createListing)
+				landlord.Patch("/listings/{listingId}", s.updateListing)
+				landlord.Post("/listings/{listingId}/publish", s.publishListing)
+				landlord.Post("/listings/{listingId}/unpublish", s.unpublishListing)
 			})
 		})
 	})
