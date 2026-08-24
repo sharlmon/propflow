@@ -1,1 +1,1 @@
-npm --prefix web exec -- commitlint --config web/commitlint.config.cjs --edit "$1"
+npx --no-install commitlint --config commitlint.config.cjs --edit "$1"

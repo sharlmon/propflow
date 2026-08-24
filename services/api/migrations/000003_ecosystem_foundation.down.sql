@@ -1,0 +1,43 @@
+DROP INDEX IF EXISTS tenant_score_runs_tenant_idx;
+DROP INDEX IF EXISTS contractor_releases_status_idx;
+DROP INDEX IF EXISTS milestone_evidence_milestone_idx;
+DROP INDEX IF EXISTS construction_milestones_project_idx;
+DROP INDEX IF EXISTS construction_projects_org_idx;
+DROP INDEX IF EXISTS host_payouts_host_idx;
+DROP INDEX IF EXISTS bookings_listing_idx;
+DROP INDEX IF EXISTS bookings_guest_idx;
+DROP INDEX IF EXISTS short_stay_availability_search_idx;
+DROP INDEX IF EXISTS reconciliation_exceptions_status_idx;
+DROP INDEX IF EXISTS payment_events_reference_idx;
+DROP INDEX IF EXISTS rent_obligations_due_idx;
+
+DROP TABLE IF EXISTS tenant_score_components;
+DROP TABLE IF EXISTS tenant_score_runs;
+DROP TRIGGER IF EXISTS contractor_release_requires_approval ON contractor_payment_releases;
+DROP FUNCTION IF EXISTS enforce_approved_milestone_release();
+DROP TABLE IF EXISTS contractor_payment_releases;
+DROP TABLE IF EXISTS milestone_reviews;
+DROP TABLE IF EXISTS milestone_evidence_media;
+DROP TABLE IF EXISTS milestone_evidence;
+DROP TABLE IF EXISTS construction_milestones;
+DROP TABLE IF EXISTS construction_project_members;
+DROP TABLE IF EXISTS construction_projects;
+DROP TABLE IF EXISTS host_payouts;
+DROP TABLE IF EXISTS guest_payments;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS short_stay_availability;
+DROP TABLE IF EXISTS media_objects;
+DROP TABLE IF EXISTS payment_reconciliation_exceptions;
+DROP TABLE IF EXISTS payment_reconciliation_matches;
+DROP TRIGGER IF EXISTS payment_events_immutable ON payment_events;
+DROP FUNCTION IF EXISTS reject_payment_event_mutation();
+DROP TABLE IF EXISTS payment_events;
+DROP TABLE IF EXISTS rent_obligations;
+
+ALTER TABLE listings DROP CONSTRAINT IF EXISTS listing_mode_pricing_check;
+ALTER TABLE listings DROP COLUMN IF EXISTS nightly_rate;
+ALTER TABLE listings DROP COLUMN IF EXISTS inventory_source;
+ALTER TABLE listings DROP COLUMN IF EXISTS mode;
+
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('landlord', 'renter', 'admin'));

@@ -1,8 +1,35 @@
 openapi: 3.0.3
 info:
-  title: PropFlow and FindYourKeja API
-  version: 1.0.0-mvp
-  description: Versioned REST API for the connected Kenyan rental marketplace and landlord portal.
+  title: PropFlow Ecosystem API
+  version: 1.1.0-foundation
+  description: Versioned REST API shared by the PropFlow platform and JengaBora applications. Only documented paths are implemented; later ecosystem domains remain feature-branch work.
+x-foundation-domains:
+  implemented:
+    [
+      auth,
+      properties,
+      units,
+      listings,
+      inquiries,
+      tenancies,
+      payments,
+      maintenance,
+      dashboard,
+      audit,
+      platform_health,
+    ]
+  schema-ready:
+    [
+      reconciliation,
+      bookings,
+      payouts,
+      construction_projects,
+      construction_milestones,
+      evidence,
+      approvals,
+      tenant_scoring,
+      media,
+    ]
 servers:
   - url: /api/v1
 security:
@@ -18,6 +45,17 @@ tags:
   - name: Maintenance
   - name: Dashboard
 paths:
+  /health:
+    get:
+      security: []
+      tags: [Health]
+      summary: Describe the shared ecosystem API
+      responses:
+        '200':
+          description: Ecosystem API identity and product namespaces
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlatformHealthEnvelope' }
   /healthz:
     get:
       servers: [{ url: / }]
@@ -31,7 +69,11 @@ paths:
       security: []
       tags: [Health]
       summary: Report whether PostgreSQL is reachable
-      responses: { '200': { description: API and database are ready }, '503': { description: Database is unavailable } }
+      responses:
+        {
+          '200': { description: API and database are ready },
+          '503': { description: Database is unavailable },
+        }
   /auth/register:
     post:
       security: []
@@ -43,7 +85,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/RegisterInput' }
       responses:
-        '201': { description: Account created, content: { application/json: { schema: { $ref: '#/components/schemas/UserEnvelope' } } } }
+        '201':
+          {
+            description: Account created,
+            content: { application/json: { schema: { $ref: '#/components/schemas/UserEnvelope' } } },
+          }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/ValidationError' }
   /auth/login:
@@ -55,43 +101,95 @@ paths:
         required: true
         content: { application/json: { schema: { $ref: '#/components/schemas/LoginInput' } } }
       responses:
-        '200': { description: Signed in, content: { application/json: { schema: { $ref: '#/components/schemas/UserEnvelope' } } } }
+        '200':
+          {
+            description: Signed in,
+            content: { application/json: { schema: { $ref: '#/components/schemas/UserEnvelope' } } },
+          }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /auth/logout:
     post:
       tags: [Authentication]
       summary: Revoke the current session
-      responses: { '204': { description: Session revoked }, '401': { $ref: '#/components/responses/Unauthorized' } }
+      responses:
+        { '204': { description: Session revoked }, '401': { $ref: '#/components/responses/Unauthorized' } }
   /me:
     get:
       tags: [Authentication]
       summary: Get the current authenticated user
-      responses: { '200': { description: Current user, content: { application/json: { schema: { $ref: '#/components/schemas/UserEnvelope' } } } }, '401': { $ref: '#/components/responses/Unauthorized' } }
+      responses:
+        {
+          '200':
+            {
+              description: Current user,
+              content: { application/json: { schema: { $ref: '#/components/schemas/UserEnvelope' } } },
+            },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+        }
   /properties:
     get:
       tags: [Properties]
       summary: List properties owned by the landlord organization
-      responses: { '200': { description: Property list, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: '#/components/schemas/Property' } } } } } } }, '403': { $ref: '#/components/responses/Forbidden' } }
+      responses:
+        {
+          '200':
+            {
+              description: Property list,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        {
+                          type: object,
+                          required: [data],
+                          properties:
+                            { data: { type: array, items: { $ref: '#/components/schemas/Property' } } },
+                        },
+                    },
+                },
+            },
+          '403': { $ref: '#/components/responses/Forbidden' },
+        }
     post:
       tags: [Properties]
       summary: Create a property
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PropertyInput' } } } }
-      responses: { '201': { description: Property created }, '422': { $ref: '#/components/responses/ValidationError' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/PropertyInput' } } },
+        }
+      responses:
+        {
+          '201': { description: Property created },
+          '422': { $ref: '#/components/responses/ValidationError' },
+        }
   /properties/{propertyId}:
     parameters: [{ $ref: '#/components/parameters/PropertyId' }]
     get:
       tags: [Properties]
       summary: Get a property with units
-      responses: { '200': { description: Property detail }, '404': { $ref: '#/components/responses/NotFound' } }
+      responses:
+        { '200': { description: Property detail }, '404': { $ref: '#/components/responses/NotFound' } }
     patch:
       tags: [Properties]
       summary: Update a property
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PropertyInput' } } } }
-      responses: { '200': { description: Property updated }, '404': { $ref: '#/components/responses/NotFound' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/PropertyInput' } } },
+        }
+      responses:
+        {
+          '200': { description: Property updated },
+          '404': { $ref: '#/components/responses/NotFound' },
+          '422': { $ref: '#/components/responses/ValidationError' },
+        }
     delete:
       tags: [Properties]
       summary: Delete an empty property without an active tenancy
-      responses: { '204': { description: Property deleted }, '409': { $ref: '#/components/responses/Conflict' } }
+      responses:
+        { '204': { description: Property deleted }, '409': { $ref: '#/components/responses/Conflict' } }
   /properties/{propertyId}/units:
     parameters: [{ $ref: '#/components/parameters/PropertyId' }]
     get:
@@ -101,14 +199,27 @@ paths:
     post:
       tags: [Properties]
       summary: Add a unit
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UnitInput' } } } }
-      responses: { '201': { description: Unit created }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/UnitInput' } } },
+        }
+      responses:
+        {
+          '201': { description: Unit created },
+          '409': { $ref: '#/components/responses/Conflict' },
+          '422': { $ref: '#/components/responses/ValidationError' },
+        }
   /units/{unitId}:
     parameters: [{ $ref: '#/components/parameters/UnitId' }]
     patch:
       tags: [Properties]
       summary: Update a unit
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UnitInput' } } } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/UnitInput' } } },
+        }
       responses: { '200': { description: Unit updated }, '404': { $ref: '#/components/responses/NotFound' } }
     delete:
       tags: [Properties]
@@ -119,7 +230,11 @@ paths:
     post:
       tags: [Listings]
       summary: Create a draft listing for an available unit
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ListingInput' } } } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/ListingInput' } } },
+        }
       responses: { '201': { description: Draft created }, '409': { $ref: '#/components/responses/Conflict' } }
   /listings:
     get:
@@ -139,36 +254,108 @@ paths:
       responses:
         '200':
           description: Paginated published listings
-          content: { application/json: { schema: { type: object, required: [data, meta], properties: { data: { type: array, items: { $ref: '#/components/schemas/Listing' } }, meta: { $ref: '#/components/schemas/PageMeta' } } } } }
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    {
+                      type: object,
+                      required: [data, meta],
+                      properties:
+                        {
+                          data: { type: array, items: { $ref: '#/components/schemas/Listing' } },
+                          meta: { $ref: '#/components/schemas/PageMeta' },
+                        },
+                    },
+                },
+            }
   /listings/{listingRef}:
     get:
       security: []
       tags: [Listings]
       summary: Get a published listing by slug
       parameters: [{ $ref: '#/components/parameters/ListingRef' }]
-      responses: { '200': { description: Published listing, content: { application/json: { schema: { type: object, properties: { data: { $ref: '#/components/schemas/Listing' } } } } } }, '404': { $ref: '#/components/responses/NotFound' } }
+      responses:
+        {
+          '200':
+            {
+              description: Published listing,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { type: object, properties: { data: { $ref: '#/components/schemas/Listing' } } },
+                    },
+                },
+            },
+          '404': { $ref: '#/components/responses/NotFound' },
+        }
     patch:
       tags: [Listings]
       summary: Update a landlord-owned listing
       description: Landlord mutations identify the listing with its UUID; public reads use its slug.
       parameters: [{ $ref: '#/components/parameters/ListingRef' }]
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ListingInput' } } } }
-      responses: { '200': { description: Listing updated }, '404': { $ref: '#/components/responses/NotFound' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/ListingInput' } } },
+        }
+      responses:
+        { '200': { description: Listing updated }, '404': { $ref: '#/components/responses/NotFound' } }
   /listings/{listingId}/publish:
     parameters: [{ $ref: '#/components/parameters/ListingId' }]
-    post: { tags: [Listings], summary: Publish an available unit listing, responses: { '200': { description: Listing published }, '409': { $ref: '#/components/responses/Conflict' } } }
+    post:
+      {
+        tags: [Listings],
+        summary: Publish an available unit listing,
+        responses:
+          { '200': { description: Listing published }, '409': { $ref: '#/components/responses/Conflict' } },
+      }
   /listings/{listingId}/unpublish:
     parameters: [{ $ref: '#/components/parameters/ListingId' }]
-    post: { tags: [Listings], summary: Unpublish a listing, responses: { '200': { description: Listing unpublished }, '409': { $ref: '#/components/responses/Conflict' } } }
+    post:
+      {
+        tags: [Listings],
+        summary: Unpublish a listing,
+        responses:
+          { '200': { description: Listing unpublished }, '409': { $ref: '#/components/responses/Conflict' } },
+      }
   /listings/{listingId}/inquiries:
     parameters: [{ $ref: '#/components/parameters/ListingId' }]
     post:
       tags: [Inquiries]
       summary: Submit an authenticated renter inquiry
-      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [message], properties: { message: { type: string, minLength: 10, maxLength: 2000 } } } } } }
-      responses: { '201': { description: Inquiry created }, '403': { $ref: '#/components/responses/Forbidden' }, '429': { description: Rate limited } }
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    {
+                      type: object,
+                      required: [message],
+                      properties: { message: { type: string, minLength: 10, maxLength: 2000 } },
+                    },
+                },
+            },
+        }
+      responses:
+        {
+          '201': { description: Inquiry created },
+          '403': { $ref: '#/components/responses/Forbidden' },
+          '429': { description: Rate limited },
+        }
   /renter/inquiries:
-    get: { tags: [Inquiries], summary: List the renter's inquiries, responses: { '200': { description: Inquiry list } } }
+    get:
+      {
+        tags: [Inquiries],
+        summary: List the renter's inquiries,
+        responses: { '200': { description: Inquiry list } },
+      }
   /landlord/inquiries:
     get:
       tags: [Inquiries]
@@ -180,15 +367,45 @@ paths:
       tags: [Inquiries]
       summary: Update inquiry status
       parameters: [{ name: inquiryId, in: path, required: true, schema: { type: string, format: uuid } }]
-      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [status], properties: { status: { $ref: '#/components/schemas/InquiryStatus' } } } } } }
-      responses: { '200': { description: Status updated }, '404': { $ref: '#/components/responses/NotFound' } }
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    {
+                      type: object,
+                      required: [status],
+                      properties: { status: { $ref: '#/components/schemas/InquiryStatus' } },
+                    },
+                },
+            },
+        }
+      responses:
+        { '200': { description: Status updated }, '404': { $ref: '#/components/responses/NotFound' } }
   /tenancies:
-    get: { tags: [Tenancies], summary: List role-scoped tenancies, responses: { '200': { description: Tenancy list } } }
+    get:
+      {
+        tags: [Tenancies],
+        summary: List role-scoped tenancies,
+        responses: { '200': { description: Tenancy list } },
+      }
     post:
       tags: [Tenancies]
       summary: Create a conflict-safe active tenancy
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TenancyInput' } } } }
-      responses: { '201': { description: Tenancy created }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/ValidationError' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/TenancyInput' } } },
+        }
+      responses:
+        {
+          '201': { description: Tenancy created },
+          '409': { $ref: '#/components/responses/Conflict' },
+          '422': { $ref: '#/components/responses/ValidationError' },
+        }
   /tenancies/{tenancyId}:
     get:
       tags: [Tenancies]
@@ -196,12 +413,22 @@ paths:
       parameters: [{ $ref: '#/components/parameters/TenancyId' }]
       responses: { '200': { description: Tenancy }, '404': { $ref: '#/components/responses/NotFound' } }
   /payments:
-    get: { tags: [Payments], summary: List role-scoped ledger entries, responses: { '200': { description: Payment list } } }
+    get:
+      {
+        tags: [Payments],
+        summary: List role-scoped ledger entries,
+        responses: { '200': { description: Payment list } },
+      }
     post:
       tags: [Payments]
       summary: Record a landlord ledger payment
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PaymentInput' } } } }
-      responses: { '201': { description: Payment recorded }, '409': { $ref: '#/components/responses/Conflict' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/PaymentInput' } } },
+        }
+      responses:
+        { '201': { description: Payment recorded }, '409': { $ref: '#/components/responses/Conflict' } }
   /tenancies/{tenancyId}/payments:
     get:
       tags: [Payments]
@@ -209,74 +436,305 @@ paths:
       parameters: [{ $ref: '#/components/parameters/TenancyId' }]
       responses: { '200': { description: Payment list } }
   /maintenance-requests:
-    get: { tags: [Maintenance], summary: List role-scoped maintenance requests, responses: { '200': { description: Maintenance list } } }
+    get:
+      {
+        tags: [Maintenance],
+        summary: List role-scoped maintenance requests,
+        responses: { '200': { description: Maintenance list } },
+      }
     post:
       tags: [Maintenance]
       summary: Create a request for the renter's active tenancy
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MaintenanceInput' } } } }
-      responses: { '201': { description: Request created }, '409': { $ref: '#/components/responses/Conflict' } }
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: '#/components/schemas/MaintenanceInput' } } },
+        }
+      responses:
+        { '201': { description: Request created }, '409': { $ref: '#/components/responses/Conflict' } }
   /maintenance-requests/{requestId}:
     get:
       tags: [Maintenance]
       summary: Get an authorized maintenance request
       parameters: [{ $ref: '#/components/parameters/RequestId' }]
-      responses: { '200': { description: Maintenance request }, '404': { $ref: '#/components/responses/NotFound' } }
+      responses:
+        { '200': { description: Maintenance request }, '404': { $ref: '#/components/responses/NotFound' } }
   /maintenance-requests/{requestId}/status:
     patch:
       tags: [Maintenance]
       summary: Apply a valid maintenance transition and priority
       parameters: [{ $ref: '#/components/parameters/RequestId' }]
-      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [status, priority], properties: { status: { $ref: '#/components/schemas/MaintenanceStatus' }, priority: { $ref: '#/components/schemas/Priority' } } } } } }
-      responses: { '200': { description: Request updated }, '409': { $ref: '#/components/responses/Conflict' } }
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    {
+                      type: object,
+                      required: [status, priority],
+                      properties:
+                        {
+                          status: { $ref: '#/components/schemas/MaintenanceStatus' },
+                          priority: { $ref: '#/components/schemas/Priority' },
+                        },
+                    },
+                },
+            },
+        }
+      responses:
+        { '200': { description: Request updated }, '409': { $ref: '#/components/responses/Conflict' } }
   /dashboard/landlord:
-    get: { tags: [Dashboard], summary: Get organization-scoped metrics and recent activity, responses: { '200': { description: Landlord dashboard } } }
+    get:
+      {
+        tags: [Dashboard],
+        summary: Get organization-scoped metrics and recent activity,
+        responses: { '200': { description: Landlord dashboard } },
+      }
   /dashboard/renter:
-    get: { tags: [Dashboard], summary: "Get renter tenancy, payments, maintenance, and inquiries", responses: { '200': { description: Renter dashboard } } }
+    get:
+      {
+        tags: [Dashboard],
+        summary: 'Get renter tenancy, payments, maintenance, and inquiries',
+        responses: { '200': { description: Renter dashboard } },
+      }
 components:
   securitySchemes:
     sessionCookie: { type: apiKey, in: cookie, name: propflow_session }
   parameters:
     PropertyId: { name: propertyId, in: path, required: true, schema: { type: string, format: uuid } }
     UnitId: { name: unitId, in: path, required: true, schema: { type: string, format: uuid } }
-    ListingRef: { name: listingRef, in: path, required: true, description: A public slug for GET or a listing UUID for PATCH., schema: { type: string } }
+    ListingRef:
+      {
+        name: listingRef,
+        in: path,
+        required: true,
+        description: A public slug for GET or a listing UUID for PATCH.,
+        schema: { type: string },
+      }
     ListingId: { name: listingId, in: path, required: true, schema: { type: string, format: uuid } }
     TenancyId: { name: tenancyId, in: path, required: true, schema: { type: string, format: uuid } }
     RequestId: { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }
   responses:
-    Unauthorized: { description: Authentication required, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
-    Forbidden: { description: Permission denied, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
-    NotFound: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
-    Conflict: { description: Business rule conflict, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
-    ValidationError: { description: Validation failed, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
+    Unauthorized:
+      {
+        description: Authentication required,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } },
+      }
+    Forbidden:
+      {
+        description: Permission denied,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } },
+      }
+    NotFound:
+      {
+        description: Resource not found,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } },
+      }
+    Conflict:
+      {
+        description: Business rule conflict,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } },
+      }
+    ValidationError:
+      {
+        description: Validation failed,
+        content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } },
+      }
   schemas:
+    PlatformHealthEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [service, products]
+          properties:
+            service: { type: string, enum: [propflow-ecosystem-api] }
+            products:
+              { type: array, items: { type: string, enum: [ecosystem, propflow, keja, stay, jengabora] } }
     User:
       type: object
       required: [id, email, full_name, phone, role]
-      properties: { id: { type: string, format: uuid }, email: { type: string, format: email }, full_name: { type: string }, phone: { type: string }, role: { type: string, enum: [landlord, renter, admin] }, organization_id: { type: string, format: uuid } }
-    UserEnvelope: { type: object, required: [data], properties: { data: { $ref: '#/components/schemas/User' } } }
+      properties:
+        {
+          id: { type: string, format: uuid },
+          email: { type: string, format: email },
+          full_name: { type: string },
+          phone: { type: string },
+          role: { type: string, enum: [landlord, renter, admin] },
+          organization_id: { type: string, format: uuid },
+        }
+    UserEnvelope:
+      { type: object, required: [data], properties: { data: { $ref: '#/components/schemas/User' } } }
     RegisterInput:
       type: object
       required: [email, password, full_name, phone, role]
-      properties: { email: { type: string, format: email }, password: { type: string, minLength: 10, writeOnly: true }, full_name: { type: string, minLength: 2, maxLength: 120 }, phone: { type: string }, role: { type: string, enum: [landlord, renter] } }
-    LoginInput: { type: object, required: [email, password], properties: { email: { type: string, format: email }, password: { type: string, writeOnly: true } } }
+      properties:
+        {
+          email: { type: string, format: email },
+          password: { type: string, minLength: 10, writeOnly: true },
+          full_name: { type: string, minLength: 2, maxLength: 120 },
+          phone: { type: string },
+          role: { type: string, enum: [landlord, renter] },
+        }
+    LoginInput:
+      {
+        type: object,
+        required: [email, password],
+        properties: { email: { type: string, format: email }, password: { type: string, writeOnly: true } },
+      }
     Property:
       type: object
       required: [id, name, address_line, locality, county, status]
-      properties: { id: { type: string, format: uuid }, name: { type: string }, description: { type: string }, address_line: { type: string }, locality: { type: string }, county: { type: string }, status: { type: string, enum: [active, inactive] }, unit_count: { type: integer }, available_units: { type: integer } }
-    PropertyInput: { type: object, required: [name, description, address_line, locality, county, status], properties: { name: { type: string, minLength: 2, maxLength: 120 }, description: { type: string }, address_line: { type: string }, locality: { type: string }, county: { type: string }, status: { type: string, enum: [active, inactive] } } }
-    UnitInput: { type: object, required: [unit_label, bedrooms, bathrooms, rent_amount, deposit_amount, availability_status], properties: { unit_label: { type: string }, bedrooms: { type: integer, minimum: 0, maximum: 20 }, bathrooms: { type: number, minimum: 0, exclusiveMinimum: true }, rent_amount: { type: number, minimum: 0 }, deposit_amount: { type: number, minimum: 0 }, availability_status: { type: string, enum: [available, occupied, unavailable] } } }
-    ListingInput: { type: object, required: [title, description, rent_amount, deposit_amount, amenities], properties: { title: { type: string, minLength: 3 }, description: { type: string, minLength: 10 }, rent_amount: { type: number, minimum: 0 }, deposit_amount: { type: number, minimum: 0 }, amenities: { type: array, items: { type: string } } } }
+      properties:
+        {
+          id: { type: string, format: uuid },
+          name: { type: string },
+          description: { type: string },
+          address_line: { type: string },
+          locality: { type: string },
+          county: { type: string },
+          status: { type: string, enum: [active, inactive] },
+          unit_count: { type: integer },
+          available_units: { type: integer },
+        }
+    PropertyInput:
+      {
+        type: object,
+        required: [name, description, address_line, locality, county, status],
+        properties:
+          {
+            name: { type: string, minLength: 2, maxLength: 120 },
+            description: { type: string },
+            address_line: { type: string },
+            locality: { type: string },
+            county: { type: string },
+            status: { type: string, enum: [active, inactive] },
+          },
+      }
+    UnitInput:
+      {
+        type: object,
+        required: [unit_label, bedrooms, bathrooms, rent_amount, deposit_amount, availability_status],
+        properties:
+          {
+            unit_label: { type: string },
+            bedrooms: { type: integer, minimum: 0, maximum: 20 },
+            bathrooms: { type: number, minimum: 0, exclusiveMinimum: true },
+            rent_amount: { type: number, minimum: 0 },
+            deposit_amount: { type: number, minimum: 0 },
+            availability_status: { type: string, enum: [available, occupied, unavailable] },
+          },
+      }
+    ListingInput:
+      {
+        type: object,
+        required: [title, description, rent_amount, deposit_amount, amenities],
+        properties:
+          {
+            title: { type: string, minLength: 3 },
+            description: { type: string, minLength: 10 },
+            rent_amount: { type: number, minimum: 0 },
+            deposit_amount: { type: number, minimum: 0 },
+            amenities: { type: array, items: { type: string } },
+          },
+      }
     Listing:
       allOf:
         - { $ref: '#/components/schemas/ListingInput' }
-        - { type: object, required: [id, property_id, unit_id, slug, status, property_name, locality, county, bedrooms, bathrooms, image_url, image_alt], properties: { id: { type: string, format: uuid }, property_id: { type: string, format: uuid }, unit_id: { type: string, format: uuid }, slug: { type: string }, status: { type: string, enum: [draft, published, unpublished, rented] }, property_name: { type: string }, locality: { type: string }, county: { type: string }, bedrooms: { type: integer }, bathrooms: { type: number }, image_url: { type: string }, image_alt: { type: string }, organization_name: { type: string } } }
+        - {
+            type: object,
+            required:
+              [
+                id,
+                property_id,
+                unit_id,
+                slug,
+                status,
+                property_name,
+                locality,
+                county,
+                bedrooms,
+                bathrooms,
+                image_url,
+                image_alt,
+              ],
+            properties:
+              {
+                id: { type: string, format: uuid },
+                property_id: { type: string, format: uuid },
+                unit_id: { type: string, format: uuid },
+                slug: { type: string },
+                status: { type: string, enum: [draft, published, unpublished, rented] },
+                property_name: { type: string },
+                locality: { type: string },
+                county: { type: string },
+                bedrooms: { type: integer },
+                bathrooms: { type: number },
+                image_url: { type: string },
+                image_alt: { type: string },
+                organization_name: { type: string },
+              },
+          }
     InquiryStatus: { type: string, enum: [new, contacted, viewing_scheduled, accepted, closed] }
-    TenancyInput: { type: object, required: [unit_id, tenant_id, start_date, monthly_rent, deposit_amount], properties: { unit_id: { type: string, format: uuid }, tenant_id: { type: string, format: uuid }, inquiry_id: { type: string, format: uuid }, start_date: { type: string, format: date }, end_date: { type: string, format: date }, monthly_rent: { type: number, minimum: 0 }, deposit_amount: { type: number, minimum: 0 } } }
-    PaymentInput: { type: object, required: [tenancy_id, amount, method, reference, paid_at], properties: { tenancy_id: { type: string, format: uuid }, amount: { type: number, minimum: 0, exclusiveMinimum: true }, method: { type: string, enum: [cash, bank, mpesa_demo] }, reference: { type: string }, paid_at: { type: string, format: date }, status: { type: string, enum: [recorded] } } }
-    MaintenanceInput: { type: object, required: [tenancy_id, title, description, priority], properties: { tenancy_id: { type: string, format: uuid }, title: { type: string, minLength: 3, maxLength: 120 }, description: { type: string, minLength: 10, maxLength: 2000 }, priority: { $ref: '#/components/schemas/Priority' } } }
+    TenancyInput:
+      {
+        type: object,
+        required: [unit_id, tenant_id, start_date, monthly_rent, deposit_amount],
+        properties:
+          {
+            unit_id: { type: string, format: uuid },
+            tenant_id: { type: string, format: uuid },
+            inquiry_id: { type: string, format: uuid },
+            start_date: { type: string, format: date },
+            end_date: { type: string, format: date },
+            monthly_rent: { type: number, minimum: 0 },
+            deposit_amount: { type: number, minimum: 0 },
+          },
+      }
+    PaymentInput:
+      {
+        type: object,
+        required: [tenancy_id, amount, method, reference, paid_at],
+        properties:
+          {
+            tenancy_id: { type: string, format: uuid },
+            amount: { type: number, minimum: 0, exclusiveMinimum: true },
+            method: { type: string, enum: [cash, bank, mpesa_demo] },
+            reference: { type: string },
+            paid_at: { type: string, format: date },
+            status: { type: string, enum: [recorded] },
+          },
+      }
+    MaintenanceInput:
+      {
+        type: object,
+        required: [tenancy_id, title, description, priority],
+        properties:
+          {
+            tenancy_id: { type: string, format: uuid },
+            title: { type: string, minLength: 3, maxLength: 120 },
+            description: { type: string, minLength: 10, maxLength: 2000 },
+            priority: { $ref: '#/components/schemas/Priority' },
+          },
+      }
     Priority: { type: string, enum: [low, medium, high, emergency] }
     MaintenanceStatus: { type: string, enum: [open, acknowledged, in_progress, resolved, cancelled] }
-    PageMeta: { type: object, required: [page, page_size, total, total_pages], properties: { page: { type: integer }, page_size: { type: integer }, total: { type: integer }, total_pages: { type: integer } } }
+    PageMeta:
+      {
+        type: object,
+        required: [page, page_size, total, total_pages],
+        properties:
+          {
+            page: { type: integer },
+            page_size: { type: integer },
+            total: { type: integer },
+            total_pages: { type: integer },
+          },
+      }
     ErrorEnvelope:
       type: object
       required: [error]
@@ -284,4 +742,10 @@ components:
         error:
           type: object
           required: [code, message, request_id]
-          properties: { code: { type: string }, message: { type: string }, fields: { type: object, additionalProperties: { type: string } }, request_id: { type: string } }
+          properties:
+            {
+              code: { type: string },
+              message: { type: string },
+              fields: { type: object, additionalProperties: { type: string } },
+              request_id: { type: string },
+            }

@@ -1,160 +1,148 @@
-# PropFlow + FindYourKeja
+# PropFlow Ecosystem
 
-PropFlow is a landlord operations portal for Kenyan rental property. FindYourKeja is its connected public rental marketplace. This repository contains the Wednesday MVP: one React application, one Go API, and one PostgreSQL database supporting a complete landlord-to-renter journey.
+PropFlow is the shared property-operations core for a connected Kenyan real-estate ecosystem:
 
-## MVP journey
+- **PropFlow** — landlord and property-manager operations.
+- **FindYourKeja** — verified long-term rentals sourced from PropFlow inventory.
+- **StayBora** — short-stay listings, calendars, bookings and host accounting.
+- **JengaBora** — construction milestones, proof of work, approvals and payment-release control.
 
-A landlord can sign in, create a property and unit, publish it, manage a renter inquiry, create a tenancy, record a demo ledger payment, and update maintenance. A renter can search public listings, inquire, see tenancy/payment state, and submit maintenance. Dashboards derive their values from PostgreSQL.
+The verified `develop` baseline already completes the long-term landlord-to-renter MVP. The current ecosystem work preserves that path while adding a workspace foundation for the other products. Foundation routes are labeled honestly; they are not presented as completed payment, booking or construction workflows.
 
-Live payments, AI, uploads, e-signatures, chat, admin moderation, and advanced accounting are deliberately excluded from the P0 navigation.
-
-## Architecture
-
-This is a modular monolith with two deployable containers behind one browser origin:
+## Runtime topology
 
 ```text
-Browser → Nginx/Vite → /api/v1 → Go/Chi API → PostgreSQL 17
+Platform browser :3000 ─┐
+                        ├─ /api/v1 ─> Go/Chi API :8080 ─> PostgreSQL :5432
+JengaBora browser :3001 ┘                         └──────> MinIO :9000
 ```
 
-- `web/`: React 19, TypeScript, Vite, React Router, TanStack Query, React Hook Form, Zod, Tailwind, Vitest/Testing Library, Playwright
-- `api/`: Go 1.25, `net/http`, Chi, pgx/pgxpool, SQLC query definitions and generated package, `slog`
-- `api/migrations/`: additive schema and deterministic Kenyan demo seed
-- `docs/api/openapi.yaml`: OpenAPI 3 contract
-- `compose.yaml`: PostgreSQL, API, and production-like Nginx web container
+- `apps/platform-web/`: React 19, TypeScript, Vite, React Router, TanStack Query, React Hook Form, Zod and Tailwind.
+- `apps/jengabora-web/`: separate React/Vite application shell for construction workflows.
+- `services/api/`: Go 1.25 modular monolith with Chi, pgx/pgxpool, SQLC, `slog` and server-side sessions.
+- `packages/ui/`: shared accessible presentation primitives.
+- `packages/api-client/`: credentialed typed API client foundation.
+- `packages/contracts/`: shared API envelope and identity contracts.
+- `packages/config/`: ecosystem product metadata, feature flags and design tokens.
+- `services/api/migrations/`: additive PostgreSQL schema and deterministic Kenyan demo seed.
+- `docs/api/openapi.yaml`: implemented API contract; future domains are not documented as live endpoints.
+- `compose.yaml`: PostgreSQL, MinIO, API and both production-like Nginx frontends.
 
-Architectural rationale and diagrams are in [docs/architecture](docs/architecture).
+## Local development
 
-## Prerequisites
+Prerequisites: Node.js 20.19+, npm 10, Go 1.25+ and PostgreSQL 17. Docker Compose is the simplest full topology when Docker is available.
 
-The simplest path requires Docker with Compose. For split local development, install Node.js 20.19+ with npm 10, Go 1.25+, PostgreSQL 17, `psql`, and optionally `golang-migrate` and SQLC.
+Install the npm workspace once:
 
-## Quick start with Docker
+```bash
+npm ci
+```
+
+Run the services in separate terminals:
+
+```bash
+make api
+make platform-web
+make jengabora-web
+```
+
+Open:
+
+- Platform ecosystem: <http://localhost:3000>
+- JengaBora: <http://localhost:3001>
+- API health: <http://localhost:8080/healthz>
+
+For the complete container topology:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-Open <http://localhost:5173>. PostgreSQL initializes the schema and seed only when its volume is empty. Stop the stack with `docker compose down`; use `make demo-reset` only when you intentionally want to delete the local demo volume and reseed it.
+MinIO's S3 endpoint is <http://localhost:9000>; its local administration console is on port 9001. Development credentials in `.env.example` are demo-only.
 
-## Split local development
+## Implemented platform routes
 
-Start PostgreSQL first:
+Public and marketplace:
 
-```bash
-docker compose up -d db
-cp web/.env.example web/.env.local
-cd api
-DATABASE_URL='postgres://propflow:propflow_dev_only@localhost:5432/propflow?sslmode=disable' \
-  APP_ORIGIN='http://localhost:5173' go run ./cmd/api
+```text
+/
+/login
+/register
+/keja
+/keja/listings
+/keja/listings/:slug
+/stay/*                  foundation routes; workflows deferred
 ```
 
-In a second terminal:
+PropFlow landlord operations:
 
-```bash
-cd web
-npm ci
-npm run dev
+```text
+/propflow/dashboard
+/propflow/properties
+/propflow/properties/new
+/propflow/properties/:propertyId
+/propflow/inquiries
+/propflow/tenancies
+/propflow/payments
+/propflow/maintenance
 ```
 
-Vite proxies `/api` to port 8080, so cookies remain same-origin from the browser's perspective.
+Legacy `/landlord/*`, `/renter/*` and `/listings/*` routes remain temporarily available so the verified MVP and existing bookmarks do not break during migration.
 
-## Configuration
+JengaBora route foundations run in the separate application on port 3001. Their database-backed behavior begins on `feat/jengabora-projects-milestones`; no approval or payout control is currently claimed as complete.
 
-Copy [`.env.example`](.env.example) for Compose and [`web/.env.example`](web/.env.example) for Vite. Important settings are:
+## Demo accounts
 
-- `DATABASE_URL`: PostgreSQL DSN; required by the API
-- `APP_ORIGIN`: the one exact browser origin allowed for credentialed requests
-- `COOKIE_SECURE`: set `true` behind production HTTPS
-- `SESSION_TTL`: server-side session lifetime
-- `VITE_API_BASE_URL`: normally `/api/v1`
+The current long-term rental seed uses the development-only password `DemoPass2026!`:
 
-No AI provider secret or payment credential belongs in a `VITE_*` variable.
+| Role              | Email                    |
+| ----------------- | ------------------------ |
+| Landlord          | `landlord@propflow.demo` |
+| Renter            | `renter@propflow.demo`   |
+| Future admin seed | `admin@propflow.demo`    |
 
-## Database and demo data
+See `docs/demo/accounts.md`. New host, guest, developer, supervisor and contractor accounts are added only when shared RBAC and their workflows are implemented.
 
-Migrations are [api/migrations/000001_initial.up.sql](api/migrations/000001_initial.up.sql) and [api/migrations/000002_seed.up.sql](api/migrations/000002_seed.up.sql). With `golang-migrate` installed:
-
-```bash
-make migrate-up
-make migrate-down
-make seed
-make db-reset
-```
-
-The reset, seed, and down targets reject database URLs that do not look like the local `propflow` demo database. The test target separately requires `TEST_DATABASE_URL` containing `_test` or `test_`.
-
-Seeded accounts all use the development-only password `DemoPass2026!`:
-
-| Role | Email |
-| --- | --- |
-| Landlord | `landlord@propflow.demo` |
-| Renter | `renter@propflow.demo` |
-| Future admin seed | `admin@propflow.demo` |
-
-See [docs/demo/accounts.md](docs/demo/accounts.md) for the warning and seeded state.
-
-## Verification
+## Quality checks
 
 ```bash
-cd web
 npm run format:check
 npm run lint
+npm run typecheck
 npm run test
 npm run build
-npm run contract:check
-npm audit --audit-level=high
 
-cd ../api
+cd services/api
 gofmt -l .
 go vet ./...
 go test ./...
 go test -race ./...
-govulncheck ./...
 ```
 
-The isolated browser journey requires a PostgreSQL database whose name clearly contains `test`:
+Database migrations are applied in order:
 
-```bash
-docker compose --profile test up -d test-db
-psql 'postgres://propflow:propflow_test_only@localhost:5433/propflow_test?sslmode=disable' \
-  -v ON_ERROR_STOP=1 -f api/migrations/000001_initial.up.sql
-psql 'postgres://propflow:propflow_test_only@localhost:5433/propflow_test?sslmode=disable' \
-  -v ON_ERROR_STOP=1 -f api/migrations/000002_seed.up.sql
-TEST_DATABASE_URL='postgres://propflow:propflow_test_only@localhost:5433/propflow_test?sslmode=disable' \
-  make test-e2e
+```text
+000001_initial.up.sql
+000002_seed.up.sql
+000003_ecosystem_foundation.up.sql
 ```
 
-Local evidence and explicit blockers are recorded in [docs/delivery/verification.md](docs/delivery/verification.md). CI repeats frontend, backend, migration, contract, E2E, dependency, secret, and image-build gates.
+The third migration adds schema foundations and guardrails for reconciliation, media, short stays, construction approvals, release accounting and explainable tenant-score evidence. It does not imply those HTTP workflows are implemented.
 
-## API and routes
+## Security boundary
 
-The API contract is [docs/api/openapi.yaml](docs/api/openapi.yaml). Health probes are `GET /healthz` and `GET /readyz`; product endpoints are under `/api/v1`.
+- Browser sessions use cryptographically random server-side tokens in `HttpOnly` cookies.
+- Passwords use Argon2id.
+- Mutations enforce an exact configured origin allow-list; both local applications are supported.
+- Ownership and role checks remain server-side.
+- Provider secrets never use `VITE_*` variables.
+- MinIO is private by default; media authorization and upload endpoints are implemented in the proof-of-work feature branch.
+- Live M-Pesa collection, host payouts and contractor disbursements are not claimed as production-ready.
+- Tenant scoring cannot make an approval, rejection or eviction decision.
 
-Public routes: `/`, `/listings`, `/listings/:slug`, `/login`, `/register`.
+## Delivery sequence
 
-Landlord routes: `/landlord/dashboard`, `/landlord/properties`, `/landlord/properties/new`, `/landlord/properties/:propertyId`, `/landlord/inquiries`, `/landlord/tenancies`, `/landlord/payments`, `/landlord/maintenance`, `/landlord/profile`.
+The branch plan and workboard live in `docs/delivery/branch-plan.md` and `docs/delivery/workboard.md`. The current branch is `chore/ecosystem-foundation`; the exact next branch is `feat/shared-auth-rbac` after all foundation checks pass.
 
-Renter routes: `/renter/dashboard`, `/renter/inquiries`, `/renter/maintenance`, `/renter/profile`.
-
-## Delivery workflow
-
-Work is merged feature-by-feature into `develop`; `main` remains the preserved prototype baseline until the complete release gate is independently approved. See the [branch plan](docs/delivery/branch-plan.md), [workboard](docs/delivery/workboard.md), and [branch protection guide](docs/delivery/branch-protection.md).
-
-`.github/workflows/ci.yml` runs on pull requests and pushes to `develop`/`main`. `.github/workflows/deploy-demo.yml` currently builds release images on `main`; it intentionally does not claim a live deployment because no hosting provider, production database, or environment secrets are configured.
-
-## Demo
-
-Follow the repeatable [5–7 minute demo script](docs/demo/demo-script.md). The Docker fallback needs no source edits.
-
-## Known limitations
-
-- The payment feature is a ledger only; `mpesa_demo` is simulated.
-- No hosting target is configured. Docker image and Compose startup are verified by GitHub CI, though they could not be rerun on the authoring machine because its Docker CLI was unavailable.
-- SQLC query files and generated code are checked for drift, while current domain handlers still use centralized parameterized pgx statements; moving handler persistence behind domain repositories is the next backend refactor.
-- The retained legacy prototype components remain as visual reference but are not routed or imported into the production application.
-- Frontend unit coverage is deliberately narrow; the real PostgreSQL golden-path Playwright test carries the principal integration confidence.
-
-## Post-MVP roadmap
-
-After the demo gate: extract SQLC-backed repositories, expand component/API integration tests, configure a hosting provider and migration/health rollback, then consider document storage, notifications, verified payment-provider adapters, moderation, and backend-mediated AI. Deferred features must remain hidden until they have real behavior and security review.
+Confidential & Proprietary — Patent protection intended. Unauthorised commercial use may result in legal action.

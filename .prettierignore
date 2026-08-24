@@ -1,6 +1,10 @@
 dist
 node_modules
+.codex-deck-build
+*.pptx
+~$*.pptx
 coverage
 package-lock.json
 playwright-report
 test-results
+services/api/sqlc/db

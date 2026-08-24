@@ -1,0 +1,32 @@
+{
+  "name": "propflow-ecosystem",
+  "private": true,
+  "version": "0.2.0",
+  "packageManager": "npm@10.8.2",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:platform": "npm run dev --workspace @propflow/platform-web -- --host 127.0.0.1 --port 3000 --strictPort",
+    "dev:jengabora": "npm run dev --workspace @propflow/jengabora-web -- --host 127.0.0.1 --port 3001 --strictPort",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "husky": "^9.1.7",
+    "jsdom": "^27.4.0",
+    "prettier": "^3.7.4"
+  }
+}

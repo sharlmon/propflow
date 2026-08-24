@@ -1,0 +1,12 @@
+{
+  "name": "@propflow/ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "exports": {
+    ".": "./src/index.tsx"
+  }
+}

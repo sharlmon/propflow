@@ -1,5 +1,41 @@
 # Current-state audit
 
+## Ecosystem expansion audit — 24 August 2026
+
+Baseline branch: `develop`
+
+Baseline commit: `bdbd49bee2fc6e9096d4df9f8fb01edc0229d763`
+Implementation branch: `chore/ecosystem-foundation`
+
+The current `develop` branch is a functioning PropFlow + FindYourKeja vertical-slice MVP, not the original browser-only prototype described later in this document. It has a React/Vite web application, Go/Chi API, PostgreSQL migrations and seed data, server-side cookie sessions, role guards, property and unit CRUD, long-term listings and inquiries, tenancy creation, a demo rent ledger, maintenance, database-backed dashboards, OpenAPI, Docker packaging, Playwright coverage and GitHub Actions. That working path is the safety baseline for the ecosystem expansion.
+
+The new ecosystem prompt adds three major requirements that are not present on `develop`:
+
+- a route-level StayBora short-stay product with calendar, booking, guest-payment and host-payout state;
+- a separate JengaBora application on port 3001 with construction project, milestone, evidence, approval, release-ledger and audit workflows;
+- an explainable tenant reliability score with versioned evidence, appeal and human-review guardrails.
+
+### Foundation gaps at the start of this branch
+
+- Repository paths are `web/` and `api/`, not `apps/platform-web/` and `services/api/`.
+- There is no root npm workspace or shared `packages/ui`, `packages/api-client`, `packages/contracts` and `packages/config` layer.
+- There is no second Vite application or route shell for JengaBora.
+- The platform routes still use `/landlord/*`, `/renter/*` and `/listings/*`; the requested `/propflow/*`, `/keja/*` and `/stay/*` product namespaces do not exist.
+- Compose has PostgreSQL, API and one web container, but no MinIO service, JengaBora container or object-store readiness configuration.
+- API origin configuration accepts one browser origin; two local applications require an allow-list while retaining strict origin enforcement.
+- The schema does not yet contain rent obligations, immutable provider payment events, reconciliation matches/exceptions, short-stay availability/bookings/payouts, construction evidence/review/release records, media objects or tenant-score runs/components.
+- The existing Go package is a single `internal/platform` package. The prompt's domain-level handler/service/repository split is a multi-branch refactor and must not be claimed as complete in the foundation branch.
+- Current authentication supports landlord, renter and admin roles. Host, guest, developer, project manager, supervisor and contractor identities are not yet modeled.
+- The existing password hashing, random server-side sessions, ownership checks, origin protection, rate limiting, safe headers and audit logging are reusable. Shared local-app SSO, explicit CSRF-token strategy, broader RBAC and media authorization remain follow-on work.
+
+### Foundation decision
+
+This branch will preserve the verified long-term rental path while changing its filesystem location, add the second frontend and shared workspace packages, add route-level ecosystem shells and feature flags, extend infrastructure and schema foundations, update contracts/docs/CI paths, and prove all existing checks still pass. It will not present placeholder shells as completed StayBora or JengaBora workflows. The exact next implementation branch is `feat/shared-auth-rbac`.
+
+---
+
+## Original prototype audit — 23 August 2026
+
 Audit date: 23 August 2026  
 Baseline commit: `5c0842b961eea071ed380a114e970b77ed7452cd` (`main`)  
 Safety tag: `legacy-propflow-ui-v0`  
